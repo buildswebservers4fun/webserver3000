@@ -42,8 +42,25 @@ if (System.getenv("CI_BUILD_TAG") != null) {
 jar {
     manifest {
         attributes "Implementation-Title": "Webserver3000",
-                "Implementation-Version": "${version}"
+                "Implementation-Version": "${version}",
+                'Main-Class': 'app.SimpleWebServer'
     }
+}
+
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Version': version,
+                'Main-Class': 'app.SimpleWebServer'
+    }
+    baseName = 'WebServer'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task prod(dependsOn: [clean, build, test, fatJar]) {
+    build.mustRunAfter clean
+    fatJar.mustRunAfter test
 }
 
 uploadArchives {

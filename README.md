@@ -4,4 +4,4 @@
 [![coverage report](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/badges/master/coverage.svg)](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/commits/master)
 
 
-![UML of Webserver](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/blob/master/Docs/intialUML.uxf "UML of Webserver")
+![UML of Webserver](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/blob/master/Docs/intialUML.png "UML of Webserver")

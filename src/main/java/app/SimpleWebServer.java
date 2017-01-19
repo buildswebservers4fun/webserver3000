@@ -23,7 +23,6 @@ public class SimpleWebServer {
 	private static Logger logger = LogManager.getLogger(SimpleWebServer.class.getName());
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
-		
 		// DONE: Server configuration, ideally we want to read these from an application.properties file
 		Properties prop = new Properties();
 		String propName = "application.properties";

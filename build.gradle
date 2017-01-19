@@ -42,8 +42,25 @@ if (System.getenv("CI_BUILD_TAG") != null) {
 jar {
     manifest {
         attributes "Implementation-Title": "Webserver3000",
-                "Implementation-Version": "${version}"
+                "Implementation-Version": "${version}",
+                'Main-Class': 'app.SimpleWebServer'
     }
+}
+
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Version': version,
+                'Main-Class': 'app.SimpleWebServer'
+    }
+    baseName = 'WebServer'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+task prod(dependsOn: [clean, build, test, fatJar]) {
+    build.mustRunAfter clean
+    fatJar.mustRunAfter test
 }
 
 uploadArchives {
@@ -144,64 +161,66 @@ remotes {
 		password = System.getenv('SSH_PASSWORD')
 	}
 }
-task publishToTest(dependsOn: distZip) << {
+task publishToTest(dependsOn: prod) << {
 	ssh.run {
 		session(remotes.test) {
-			println "Checking if remote /tmp/rosecalculator exists ..."
-			def result = execute('if test -d /tmp/rosecalculator; then echo "exists"; fi')						
+			println "Checking if remote /tmp/webserver exists ..."
+			def result = execute('if test -d /tmp/webserver; then echo "exists"; fi')						
 			if(result != "exists") {
-				println("Remote /tmp/rosecalculator does not exist, creating a new one...")
-				execute('mkdir -p /tmp/rosecalculator')
-				println("Remote /tmp/rosecalculator created!")
+				println("Remote /tmp/webserver does not exist, creating a new one...")
+				execute('mkdir -p /tmp/webserver')
+				println("Remote /tmp/webserver created!")
 			}
-			println "Transfering file from local build/distributions to remote /tmp/rosecalculator ..."
-			put from: "${buildDir}/distributions/*", into: '/tmp/rosecalculator'
+			println "Transfering file from local build/distributions to remote /tmp/webserver ..."
+			put from: "${buildDir}/libs/WebServer-*.jar", into: '/tmp/webserver'
 			println "Files transfer complete now setting up the web server ..."
 			
-			println "Checking if remote /var/www/html/rosecalculator exists ..."
-			result = execute('if test -d /var/www/html/rosecalculator; then echo "exists"; fi')
+			println "Checking if remote /home/csse/webserver exists ..."
+			result = execute('if test -d /home/csse/webserver; then echo "exists"; fi')
 			if(result != "exists") {
-				println("Remote /var/www/html/rosecalculator does not exist, creating a new one...")
-				executeSudo('mkdir -p /var/www/html/rosecalculator', pty: true)
-				println("Remote /var/www/html/rosecalculator created!")
+				println("Remote /home/csse/webserver does not exist, creating a new one...")
+				execute('mkdir -p /home/csse/webserver', pty: true)
+				println("Remote /home/csse/webserver created!")
 			}
 			println "Copying data from the temp folder to the web folder ..."
-			executeSudo('cp /tmp/rosecalculator/* /var/www/html/rosecalculator', pty: true)
+			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
 			println "Done! Clearing the tmp folder ..."
-			execute('rm -rf /tmp/rosecalculator')
+			execute('rm -rf /tmp/webserver')
+			execute('curl http://477-33.csse.rose-hulman.edu:8080')
 			println "All done!" 
-			println "Rosecalcultor has been deployed to http://477-33.csse.rose-hulman.edu/rosecalculator/"
+			println "webserver has been deployed to http://477-33.csse.rose-hulman.edu:8080"
 		}
 	}
 }
 
-task publishToProd(dependsOn: distZip) << {
+task publishToProd(dependsOn: prod) << {
 	ssh.run {
 		session(remotes.prod) {
-			println "Checking if remote /tmp/rosecalculator exists ..."
-			def result = execute('if test -d /tmp/rosecalculator; then echo "exists"; fi')						
+			println "Checking if remote /tmp/webserver exists ..."
+			def result = execute('if test -d /tmp/webserver; then echo "exists"; fi')						
 			if(result != "exists") {
-				println("Remote /tmp/rosecalculator does not exist, creating a new one...")
-				execute('mkdir -p /tmp/rosecalculator')
-				println("Remote /tmp/rosecalculator created!")
+				println("Remote /tmp/webserver does not exist, creating a new one...")
+				execute('mkdir -p /tmp/webserver')
+				println("Remote /tmp/webserver created!")
 			}
-			println "Transfering file from local build/distributions to remote /tmp/rosecalculator ..."
-			put from: "${buildDir}/distributions/*", into: '/tmp/rosecalculator'
+			println "Transfering file from local build/distributions to remote /tmp/webserver ..."
+			put from: "${buildDir}/libs/WebServer-*.jar", into: '/tmp/webserver'
 			println "Files transfer complete now setting up the web server ..."
 			
-			println "Checking if remote /var/www/html/rosecalculator exists ..."
-			result = execute('if test -d /var/www/html/rosecalculator; then echo "exists"; fi')
+			println "Checking if remote /home/csse/webserver exists ..."
+			result = execute('if test -d /home/csse/webserver; then echo "exists"; fi')
 			if(result != "exists") {
-				println("Remote /var/www/html/rosecalculator does not exist, creating a new one...")
-				executeSudo('mkdir -p /var/www/html/rosecalculator', pty: true)
-				println("Remote /var/www/html/rosecalculator created!")
+				println("Remote /home/csse/webserver does not exist, creating a new one...")
+				execute('mkdir -p /home/csse/webserver', pty: true)
+				println("Remote /home/csse/webserver created!")
 			}
 			println "Copying data from the temp folder to the web folder ..."
-			executeSudo('cp /tmp/rosecalculator/* /var/www/html/rosecalculator', pty: true)
+			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
 			println "Done! Clearing the tmp folder ..."
-			execute('rm -rf /tmp/rosecalculator')
+			execute('rm -rf /tmp/webserver')
+			execute('curl http://477-38.csse.rose-hulman.edu:8080')
 			println "All done!" 
-			println "Rosecalcultor has been deployed to http://477-38.csse.rose-hulman.edu/rosecalculator/"
+			println "Rosecalcultor has been deployed to http://477-38.csse.rose-hulman.edu:8080"
 		}
 	}
 }

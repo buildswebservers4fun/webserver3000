@@ -23,7 +23,14 @@ public class SimpleWebServer {
 	private static Logger logger = LogManager.getLogger(SimpleWebServer.class.getName());
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
-		
+		Properties props = new Properties(); 
+	    try { 
+	        InputStream configStream = SimpleWebServer.class.getResourceAsStream( "/log4j.properties"); 
+	        props.load(configStream); 
+	        configStream.close(); 
+	    } catch (IOException e) { 
+	        System.out.println("Error: Cannot laod configuration file "); 
+	    }
 		
 		// DONE: Server configuration, ideally we want to read these from an application.properties file
 		Properties prop = new Properties();

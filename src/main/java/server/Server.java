@@ -21,9 +21,13 @@
  
 package server;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 /**
  * This represents a welcoming server for the incoming
@@ -36,6 +40,8 @@ public class Server implements Runnable {
 	private int port;
 	private boolean stop;
 	private ServerSocket welcomeSocket;
+	
+	Logger logger = LogManager.getLogger(this.getClass());
 
 	/**
 	 * @param rootDirectory
@@ -74,6 +80,11 @@ public class Server implements Runnable {
 	public void run() {
 		try {
 			this.welcomeSocket = new ServerSocket(port);
+		} catch (IOException e1) {
+			throw new RuntimeException("Server unable to start", e1);
+		}
+		
+		try {
 			
 			// Now keep welcoming new connections until stop flag is set to true
 			while(true) {

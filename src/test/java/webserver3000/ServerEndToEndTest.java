@@ -24,6 +24,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URL;
 
 import org.junit.After;
@@ -84,13 +85,27 @@ public class ServerEndToEndTest {
 		tempDir.delete();
 	}
 
+	private boolean serverFailed;
+	
 	@Test
 	public void testGet() throws InterruptedException, IOException {
 		// Create a run the server
 		Server server = new Server(tempRootDirectory, port);
 		Thread runner = new Thread(server);
+		runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				serverFailed = true;
+			}
+		});
 		runner.start();
-
+		
+		Thread.sleep(1000);
+		if(serverFailed) {
+			fail("Server unable to start");
+		}
+		
+		
 		NetHttpTransport transport = new NetHttpTransport();
 		
 		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));

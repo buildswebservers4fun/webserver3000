@@ -65,13 +65,13 @@ public class ServerEndToEndTest {
 	@Before
 	public void setUp() throws Exception {
 		// make temporary directory and file
-		tempDir = new File(System.getProperty("user.dir") + "\\" + tempRootDirectory);
+		tempDir = new File(tempRootDirectory);
 		tempDir.mkdir();
 		if(!tempDir.exists()) {
 			throw new Exception("temp dir failed to be created");
 		}
 		
-	    file = new File(System.getProperty("user.dir") + "\\" + tempRootDirectory + "\\testFile.txt");
+	    file = new File(tempRootDirectory + "\\testFile.txt");
 	    file.createNewFile();
 	    
         PrintWriter writer = new PrintWriter(file, "UTF-8");

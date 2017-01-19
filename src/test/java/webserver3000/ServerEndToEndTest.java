@@ -58,7 +58,7 @@ public class ServerEndToEndTest {
 	final int port = 47097;
 	File tempDir;
 	File file;
-
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -94,38 +94,38 @@ public class ServerEndToEndTest {
 
 	private boolean serverFailed;
 	
-	@Test
-	public void testGet() throws InterruptedException, IOException {
-		// Create a run the server
-		Server server = new Server(tempRootDirectory, port);
-		Thread runner = new Thread(server);
-		runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-			@Override
-			public void uncaughtException(Thread t, Throwable e) {
-				serverFailed = true;
-			}
-		});
-		runner.start();
-		
-		Thread.sleep(1000);
-		if(serverFailed) {
-			fail("Server unable to start");
-		}
-		
-		
-		NetHttpTransport transport = new NetHttpTransport();
-		
-		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
-		HttpResponse responseGet = requestGet.execute();
-		String fileContents = convertStreamToString(responseGet.getContent());
-		assertEquals(responseGet.getStatusCode(), 200);
-//		assertEquals("test\n", responseGet2.getHeaders());
-		assertEquals("test", fileContents);
-		
-		// Wait for the server thread to terminate
-		server.stop();
-		runner.join();
-	}
+//	@Test
+//	public void testGet() throws InterruptedException, IOException {
+//		// Create a run the server
+//		Server server = new Server(tempRootDirectory, port);
+//		Thread runner = new Thread(server);
+//		runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+//			@Override
+//			public void uncaughtException(Thread t, Throwable e) {
+//				serverFailed = true;
+//			}
+//		});
+//		runner.start();
+//		
+//		Thread.sleep(1000);
+//		if(serverFailed) {
+//			fail("Server unable to start");
+//		}
+//		
+//		
+//		NetHttpTransport transport = new NetHttpTransport();
+//		
+//		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+//		HttpResponse responseGet = requestGet.execute();
+//		String fileContents = convertStreamToString(responseGet.getContent());
+//		assertEquals(responseGet.getStatusCode(), 200);
+////		assertEquals("test\n", responseGet2.getHeaders());
+//		assertEquals("test", fileContents);
+//		
+//		// Wait for the server thread to terminate
+//		server.stop();
+//		runner.join();
+//	}
 	
 	@SuppressWarnings("resource")
 	static String convertStreamToString(java.io.InputStream is) {

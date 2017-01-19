@@ -4,14 +4,29 @@
     <Console name="STDOUT" target="SYSTEM_OUT">
       <PatternLayout pattern="%m%n"/>
     </Console>
-    <File name="MyFile" fileName="logs/app.log">
+    <File name="Error" fileName="logs/error.log">
       <PatternLayout pattern="%m%n"/>
     </File>
+    <File name="Access" fileName="logs/access.log">
+      <PatternLayout pattern="%m%n"/>
+    </File>
+    <File name="All" fileName="logs/app.log">
+      <PatternLayout pattern="%m%n"/>
+    </File>
+    
   </Appenders>
   <Loggers>
-    <Root level="all">
-      <AppenderRef ref="STDOUT"/>
-      <AppenderRef ref="MyFile"/>
+    <Logger name="error" level= "all">
+      <AppenderRef ref="STDOUT" level="error"/>
+      <AppenderRef ref="Error" level="error"/>
+    </Logger>
+    <Logger name="access" level = "all">
+      <AppenderRef ref="STDOUT" level="info"/>
+      <AppenderRef ref="Access" level="info"/>
+    </Logger>
+    <Root level = "all">
+      <AppenderRef ref="STDOUT" level="info"/>
+      <AppenderRef ref="All" level="info"/>
     </Root>
   </Loggers>
 </Configuration>

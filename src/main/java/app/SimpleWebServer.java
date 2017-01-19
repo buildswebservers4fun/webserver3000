@@ -20,9 +20,12 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class SimpleWebServer {
-	private static Logger logger = LogManager.getLogger(SimpleWebServer.class.getName());
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
+		Logger errorLogger = utils.ErrorLogger.getInstance();
+		Logger traceLogger = utils.AccessLogger.getInstance();
+		
+		
 		// DONE: Server configuration, ideally we want to read these from an application.properties file
 		Properties prop = new Properties();
 		String propName = "application.properties";
@@ -50,7 +53,8 @@ public class SimpleWebServer {
 		
 		// DONE: Instead of just printing to the console, use proper logging mechanism.
 		// SL4J/Log4J are some popular logging framework
-		logger.info("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory);
+		errorLogger.error("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory);
+		traceLogger.info("trace");
 		
 		// Wait for the server thread to terminate
 		runner.join();

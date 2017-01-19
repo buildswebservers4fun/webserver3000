@@ -161,7 +161,7 @@ remotes {
 		password = System.getenv('SSH_PASSWORD')
 	}
 }
-task publishToTest(dependsOn: distZip) << {
+task publishToTest(dependsOn: prod) << {
 	ssh.run {
 		session(remotes.test) {
 			println "Checking if remote /tmp/webserver exists ..."
@@ -193,7 +193,7 @@ task publishToTest(dependsOn: distZip) << {
 	}
 }
 
-task publishToProd(dependsOn: distZip) << {
+task publishToProd(dependsOn: prod) << {
 	ssh.run {
 		session(remotes.prod) {
 			println "Checking if remote /tmp/webserver exists ..."
@@ -218,6 +218,7 @@ task publishToProd(dependsOn: distZip) << {
 			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
 			println "Done! Clearing the tmp folder ..."
 			execute('rm -rf /tmp/webserver')
+			execute('curl http://477-38.csse.rose-hulman.edu:8080')
 			println "All done!" 
 			println "Rosecalcultor has been deployed to http://477-38.csse.rose-hulman.edu:8080"
 		}

@@ -67,6 +67,9 @@ public class ServerEndToEndTest {
 		// make temporary directory and file
 		tempDir = new File(System.getProperty("user.dir") + "\\" + tempRootDirectory);
 		tempDir.mkdir();
+		if(!tempDir.exists()) {
+			throw new Exception("temp dir failed to be created");
+		}
 		
 	    file = new File(System.getProperty("user.dir") + "\\" + tempRootDirectory + "\\testFile.txt");
 	    file.createNewFile();
@@ -74,6 +77,10 @@ public class ServerEndToEndTest {
         PrintWriter writer = new PrintWriter(file, "UTF-8");
         writer.print("test");
         writer.close();
+        
+		if(!file.exists()) {
+			throw new Exception("temp file failed to be created");
+		}
 	}
 
 	/**

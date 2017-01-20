@@ -19,7 +19,8 @@
 
 package webserver3000;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,15 +35,7 @@ import org.junit.Test;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpResponse;
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.http.LowLevelHttpRequest;
-import com.google.api.client.http.LowLevelHttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.Json;
-import com.google.api.client.testing.http.HttpTesting;
-import com.google.api.client.testing.http.MockHttpTransport;
-import com.google.api.client.testing.http.MockLowLevelHttpRequest;
-import com.google.api.client.testing.http.MockLowLevelHttpResponse;
 
 import server.Server;
 
@@ -120,9 +113,15 @@ public class ServerEndToEndTest {
 //		assertEquals("test\n", responseGet2.getHeaders());
 		assertEquals("test", fileContents);
 		
+		
+		if(serverFailed) {
+			fail("There was an uncaught exception on the server");
+		}
+		
 		// Wait for the server thread to terminate
 		server.stop();
 		runner.join();
+		
 	}
 	
 	static String convertStreamToString(java.io.InputStream is) {

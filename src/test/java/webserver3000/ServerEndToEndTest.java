@@ -50,6 +50,9 @@ public class ServerEndToEndTest {
 	File tempDir;
 	File file;
 	
+	Server server;
+	Thread runner;
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
@@ -72,24 +75,9 @@ public class ServerEndToEndTest {
 		if(!file.exists()) {
 			throw new Exception("temp file failed to be created");
 		}
-	}
-
-	/**
-	 * @throws java.lang.Exception
-	 */
-	@After
-	public void tearDown() throws Exception {
-		file.delete();
-		tempDir.delete();
-	}
-
-	private boolean serverFailed;
-	
-	@Test
-	public void testGet() throws InterruptedException, IOException {
-		// Create a run the server
-		Server server = new Server(tempRootDirectory, port);
-		Thread runner = new Thread(server);
+		
+		server = new Server(tempRootDirectory, port);
+		runner = new Thread(server);
 		runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread t, Throwable e) {
@@ -97,23 +85,18 @@ public class ServerEndToEndTest {
 			}
 		});
 		runner.start();
-		
 		Thread.sleep(1000);
 		if(serverFailed) {
 			fail("Server unable to start");
 		}
 		
-		
-		NetHttpTransport transport = new NetHttpTransport();
-		
-		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
-		HttpResponse responseGet = requestGet.execute();
-		String fileContents = convertStreamToString(responseGet.getContent());
-		assertEquals(responseGet.getStatusCode(), 200);
-//		assertEquals("test\n", responseGet2.getHeaders());
-		assertEquals("test", fileContents);
-		
-		
+	}
+
+	/**
+	 * @throws java.lang.Exception
+	 */
+	@After
+	public void tearDown() throws Exception {
 		if(serverFailed) {
 			fail("There was an uncaught exception on the server");
 		}
@@ -122,6 +105,23 @@ public class ServerEndToEndTest {
 		server.stop();
 		runner.join();
 		
+		
+		file.delete();
+		tempDir.delete();
+	}
+
+	private boolean serverFailed;
+	
+	@Test
+	public void testGet() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+		HttpResponse responseGet = requestGet.execute();
+		String fileContents = convertStreamToString(responseGet.getContent());
+		assertEquals(responseGet.getStatusCode(), 200);
+//		assertEquals("test\n", responseGet2.getHeaders());
+		assertEquals("test", fileContents);
 	}
 	
 	static String convertStreamToString(java.io.InputStream is) {

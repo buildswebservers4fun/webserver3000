@@ -157,8 +157,10 @@ remotes {
 	}
 	test {
 		host = '477-33.csse.rose-hulman.edu'
-		user = System.getenv('SSH_USER')
-		password = System.getenv('SSH_PASSWORD')
+//		user = System.getenv('SSH_USER')
+//		password = System.getenv('SSH_PASSWORD')
+		user = 'csse'
+		password = 'webserver'
 	}
 }
 task publishToTest(dependsOn: prod) << {
@@ -183,10 +185,14 @@ task publishToTest(dependsOn: prod) << {
 				println("Remote /home/csse/webserver created!")
 			}
 			println "Copying data from the temp folder to the web folder ..."
+//			executeSudo('sudo /etc/init.d/webserver stop', pty: true)
+			sleep(1000)
 			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
 			println "Done! Clearing the tmp folder ..."
 			execute('rm -rf /tmp/webserver')
-			execute('curl http://477-33.csse.rose-hulman.edu:8080')
+			executeSudo('sudo /etc/init.d/webserver start', pty: true)
+			sleep(1000)
+			execute('curl localhost:8080')
 			println "All done!" 
 			println "webserver has been deployed to http://477-33.csse.rose-hulman.edu:8080"
 		}
@@ -215,10 +221,14 @@ task publishToProd(dependsOn: prod) << {
 				println("Remote /home/csse/webserver created!")
 			}
 			println "Copying data from the temp folder to the web folder ..."
+//			executeSudo('sudo /etc/init.d/webserver stop', pty: true)
+			sleep(1000)
 			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
 			println "Done! Clearing the tmp folder ..."
 			execute('rm -rf /tmp/webserver')
-			execute('curl http://477-38.csse.rose-hulman.edu:8080')
+			executeSudo('sudo /etc/init.d/webserver start', pty: true)
+			sleep(1000)
+			execute('curl localhost:8080')
 			println "All done!" 
 			println "Rosecalcultor has been deployed to http://477-38.csse.rose-hulman.edu:8080"
 		}

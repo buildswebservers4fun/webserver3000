@@ -13,15 +13,12 @@
     <File name="All" fileName="logs/app.log">
       <PatternLayout pattern="%m%n"/>
     </File>
-    
   </Appenders>
   <Loggers>
-    <Logger name="error" level= "all">
-      <AppenderRef ref="STDOUT" level="error"/>
+    <Logger name="error" level= "all">      
       <AppenderRef ref="Error" level="error"/>
     </Logger>
     <Logger name="access" level = "all">
-      <AppenderRef ref="STDOUT" level="info"/>
       <AppenderRef ref="Access" level="info"/>
     </Logger>
     <Root level = "all">

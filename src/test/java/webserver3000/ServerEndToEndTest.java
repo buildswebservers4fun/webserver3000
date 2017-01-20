@@ -51,8 +51,6 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ServerEndToEndTest {
-	static Server server;
-	static Thread runner;
 	final String tempRootDirectory = "tempWeb";
 	final String SERVER_PATH = "http://localhost:";
 	final int port = 47097;
@@ -98,7 +96,7 @@ public class ServerEndToEndTest {
 	public void testGet() throws InterruptedException, IOException {
 		// Create a run the server
 		Server server = new Server(tempRootDirectory, port);
-		Thread runfner = new Thread(server);
+		Thread runner = new Thread(server);
 		runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread t, Throwable e) {

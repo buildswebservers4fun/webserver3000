@@ -65,7 +65,7 @@ public class ServerEndToEndTest {
 			throw new Exception("temp dir failed to be created");
 		}
 		
-	    file = new File(tempRootDirectory + "\\testFile.txt");
+	    file = new File(tempRootDirectory, "testFile.txt");
 	    file.createNewFile();
 	    
         PrintWriter writer = new PrintWriter(file, "UTF-8");

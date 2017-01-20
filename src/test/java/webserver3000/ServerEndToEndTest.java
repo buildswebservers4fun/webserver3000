@@ -44,7 +44,7 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ServerEndToEndTest {
-	final String tempRootDirectory = "tempWeb";
+	final String tempRootDirectory = "./tempWeb";
 	final String SERVER_PATH = "http://localhost:";
 	final int port = 47097;
 	File tempDir;

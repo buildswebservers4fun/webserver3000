@@ -53,7 +53,7 @@ public class SimpleWebServer {
 		
 		// DONE: Instead of just printing to the console, use proper logging mechanism.
 		// SL4J/Log4J are some popular logging framework
-		errorLogger.error("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory);
+		errorLogger.error(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
 		traceLogger.info("trace");
 		
 		// Wait for the server thread to terminate

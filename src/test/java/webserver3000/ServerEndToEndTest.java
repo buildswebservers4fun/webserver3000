@@ -125,11 +125,11 @@ public class ServerEndToEndTest {
 		runner.join();
 	}
 	
-	@SuppressWarnings("resource")
 	static String convertStreamToString(java.io.InputStream is) {
 		java.util.Scanner s = null;
 		try {
-			s = new java.util.Scanner(is).useDelimiter("\\A");
+			s = new java.util.Scanner(is);
+			s.useDelimiter("\\A");
 		    return s.hasNext() ? s.next() : "";
 		} finally {
 			s.close();

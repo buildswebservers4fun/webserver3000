@@ -183,13 +183,14 @@ task publishToTest(dependsOn: prod) << {
 				println("Remote /home/csse/webserver created!")
 			}
 			println "Copying data from the temp folder to the web folder ..."
-//			executeSudo('sudo /etc/init.d/webserver stop', pty: true)
+//			executeSudo('/etc/init.d/webserver stop', pty: true)
 			sleep(1000)
 			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
 			println "Done! Clearing the tmp folder ..."
 			execute('rm -rf /tmp/webserver')
-			executeSudo('sudo /etc/init.d/webserver start', pty: true)
+			executeSudo('/etc/init.d/webserver start', pty: true)
 			sleep(1000)
+			executeSudo('/etc/init.d/webserver status', pty: true)
 			execute('curl localhost:8080')
 			println "All done!" 
 			println "webserver has been deployed to http://477-33.csse.rose-hulman.edu:8080"

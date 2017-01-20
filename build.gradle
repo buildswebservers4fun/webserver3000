@@ -157,10 +157,8 @@ remotes {
 	}
 	test {
 		host = '477-33.csse.rose-hulman.edu'
-//		user = System.getenv('SSH_USER')
-//		password = System.getenv('SSH_PASSWORD')
-		user = 'csse'
-		password = 'webserver'
+		user = System.getenv('SSH_USER')
+		password = System.getenv('SSH_PASSWORD')
 	}
 }
 task publishToTest(dependsOn: prod) << {

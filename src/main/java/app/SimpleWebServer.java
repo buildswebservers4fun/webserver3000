@@ -2,9 +2,11 @@ package app;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import server.Server;
-import utils.AccessLogger;
-import utils.ErrorLogger;
 
 /**
  * The entry point of the Simple Web Server (SWS).
@@ -12,6 +14,9 @@ import utils.ErrorLogger;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class SimpleWebServer {
+	
+	private static Logger logger = LogManager.getLogger(SimpleWebServer.class);
+
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		// DONE: Server configuration, ideally we want to read these from an application.properties file
@@ -28,6 +33,6 @@ public class SimpleWebServer {
 
 		// DONE: Instead of just printing to the console, use proper logging mechanism.
 		// SL4J/Log4J are some popular logging framework
-		ErrorLogger.getInstance().error(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
+		logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
 	}
 }

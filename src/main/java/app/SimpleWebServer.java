@@ -1,17 +1,7 @@
 package app;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.api.client.util.IOUtils;
-
 import server.Server;
 import utils.AccessLogger;
 import utils.ErrorLogger;
@@ -36,14 +26,8 @@ public class SimpleWebServer {
 		Thread runner = new Thread(server);
 		runner.start();
 
-		
 		// DONE: Instead of just printing to the console, use proper logging mechanism.
 		// SL4J/Log4J are some popular logging framework
-		
 		ErrorLogger.getInstance().error(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
-		AccessLogger.getInstance().info("trace");
-		
-		// Wait for the server thread to terminate
-		runner.join();
 	}
 }

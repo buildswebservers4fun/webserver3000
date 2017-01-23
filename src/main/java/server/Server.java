@@ -35,7 +35,7 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
-public class Server implements Runnable {
+public class Server {
 	private String rootDirectory;
 	private int port;
 	private ServerSocket welcomeSocket;
@@ -49,7 +49,6 @@ public class Server implements Runnable {
 	public Server(String rootDirectory, int port) {
 		this.rootDirectory = rootDirectory;
 		this.port = port;
-		this.stop = false;
 	}
 
 	/**
@@ -76,7 +75,7 @@ public class Server implements Runnable {
 	 * TCP connection request and creates a {@link ConnectionHandler} for
 	 * the request.
 	 */
-	public void run() {
+	public void start() {
 		try {
 			this.welcomeSocket = new ServerSocket(port);
 		} catch (IOException e1) {
@@ -84,12 +83,12 @@ public class Server implements Runnable {
 		}
 		
 		try {
-			
 			// Now keep welcoming new connections until stop flag is set to true
+			logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
 			while(true) {
 				// Listen for incoming socket connection
 				// This method block until somebody makes a request
-				Socket connectionSocket = this.welcomeSocket.accept();
+				Socket connectionSocket = welcomeSocket.accept();
 				// Create a handler for this incoming connection and start the handler in a new thread
 				ConnectionHandler handler = new ConnectionHandler(this, connectionSocket);
 				new Thread(handler).start();
@@ -98,6 +97,8 @@ public class Server implements Runnable {
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+			
+		
 	}
 	
 	/**

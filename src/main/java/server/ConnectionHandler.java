@@ -106,43 +106,10 @@ public class ConnectionHandler implements Runnable {
 				// Here you checked that the "Protocol.VERSION" string is not equal to the  
 				// "request.version" string ignoring the case of the letters in both strings
 				// TODO: Fill in the rest of the code here
+				response = badProtocolRequest(request);
 			}
 			else if(request.getMethod().equalsIgnoreCase(Protocol.GET)) {
-//				Map<String, String> header = request.getHeader();
-//				String date = header.get("if-modified-since");
-//				String hostName = header.get("host");
-//				
-				// Handling GET request here
-				// Get relative URI path from request
-				String uri = request.getUri();
-				// Get root directory path from server
-				String rootDirectory = server.getRootDirectory();
-				// Combine them together to form absolute file path
-				File file = new File(rootDirectory + uri);
-				// Check if the file exists
-				if(file.exists()) {
-					if(file.isDirectory()) {
-						// Look for default index.html file in a directory
-						String location = rootDirectory + uri + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
-						file = new File(location);
-						if(file.exists()) {
-							// Lets create 200 OK response
-							response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-						}
-						else {
-							// File does not exist so lets create 404 file not found code
-							response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-						}
-					}
-					else { // Its a file
-						// Lets create 200 OK response
-						response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-					}
-				}
-				else {
-					// File does not exist so lets create 404 file not found code
-					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
-				}
+				response = getRequest(request);
 			}
 		}
 		catch(Exception e) {
@@ -167,5 +134,49 @@ public class ConnectionHandler implements Runnable {
 			// We will ignore this exception
 			e.printStackTrace();
 		} 
+	}
+
+	private HttpResponse badProtocolRequest(HttpRequest request) {
+		return null;
+	}
+	
+	private HttpResponse getRequest(HttpRequest request) {
+		HttpResponse response;
+		//				Map<String, String> header = request.getHeader();
+		//				String date = header.get("if-modified-since");
+		//				String hostName = header.get("host");
+		//				
+						// Handling GET request here
+						// Get relative URI path from request
+						String uri = request.getUri();
+						// Get root directory path from server
+						String rootDirectory = server.getRootDirectory();
+						// Combine them together to form absolute file path
+						File file = new File(rootDirectory + uri);
+						// Check if the file exists
+						if(file.exists()) {
+							if(file.isDirectory()) {
+								// Look for default index.html file in a directory
+								String location = rootDirectory + uri + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
+								file = new File(location);
+								if(file.exists()) {
+									// Lets create 200 OK response
+									response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+								}
+								else {
+									// File does not exist so lets create 404 file not found code
+									response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+								}
+							}
+							else { // Its a file
+								// Lets create 200 OK response
+								response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+							}
+						}
+						else {
+							// File does not exist so lets create 404 file not found code
+							response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+						}
+		return response;
 	}
 }

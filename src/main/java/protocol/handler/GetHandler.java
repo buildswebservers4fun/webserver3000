@@ -27,7 +27,7 @@ public class GetHandler implements IRequestHandler {
 		String uri = request.getUri();
 		// Get root directory path from server
 		// Combine them together to form absolute file path
-		File file = new File(rootDirectory + uri);
+		File file = new File(rootDirectory, uri);
 		// Check if the file exists
 		if (file.exists()) {
 			if (file.isDirectory()) {

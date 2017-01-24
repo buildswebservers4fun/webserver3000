@@ -32,7 +32,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpContent;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.javanet.NetHttpTransport;
@@ -125,7 +127,7 @@ public class ServerEndToEndTest {
 		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
 		HttpResponse responseGet = requestGet.execute();
 		String fileContents = convertStreamToString(responseGet.getContent());
-		assertEquals(responseGet.getStatusCode(), 200);
+		assertEquals(200, responseGet.getStatusCode());
 //		assertEquals("test\n", responseGet2.getHeaders());
 		assertEquals("test", fileContents);
 	}
@@ -139,6 +141,43 @@ public class ServerEndToEndTest {
 		String fileContents = convertStreamToString(responseGet.getContent());
 		assertEquals(responseGet.getStatusCode(), 200);
 		assertEquals("", fileContents);
+	}
+	
+	public void testPutFileExists() throws InterruptedException, IOException {
+		//tests that a put request overwrites the file if it does exist
+		
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		String test = "overwrite";
+		byte[] bytes = test.getBytes();
+		HttpContent content = new ByteArrayContent("type", bytes);
+		HttpRequest requestPut = transport.createRequestFactory().buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")), content);
+		HttpResponse responsePut = requestPut.execute();
+		assertEquals(200, responsePut.getStatusCode());
+		String fileContents = convertStreamToString(responsePut.getContent());
+		assertEquals("overwrite", fileContents);
+	}
+	
+	@Test
+	public void testPutFileDoesntExist() throws InterruptedException, IOException {
+		//tests that a put request creates a new file if the file doesnt exist
+		
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		String test = "new file";
+		byte[] bytes = test.getBytes();
+		HttpContent content = new ByteArrayContent("type", bytes);
+		File delete = new File(tempRootDirectory, "testFile2.txt");
+		delete.delete();
+		assertEquals(false, delete.exists());
+		HttpRequest requestPut = transport.createRequestFactory().buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile2.txt")), content);
+		HttpResponse responsePut = requestPut.execute();
+		assertEquals(201, responsePut.getStatusCode());
+		String fileContents = convertStreamToString(responsePut.getContent());
+		assertEquals("new file", fileContents);
+		
+		delete.delete();
+		assertEquals(false, delete.exists());
 	}
 	
 	static String convertStreamToString(java.io.InputStream is) {

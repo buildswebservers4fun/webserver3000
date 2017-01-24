@@ -142,7 +142,7 @@ public class HttpResponse {
 		out.write(Protocol.CRLF.getBytes());
 
 		// We are reading a file
-		if(this.getStatus() == Protocol.OK_CODE && file != null && !isHead) {
+		if((this.getStatus() == Protocol.OK_CODE || this.getStatus() == Protocol.CREATED_CODE) && file != null && !isHead) {
 			// Process text documents
 			FileInputStream fileInStream = new FileInputStream(file);
 			BufferedInputStream inStream = new BufferedInputStream(fileInStream, Protocol.CHUNK_LENGTH);

@@ -13,6 +13,7 @@ import protocol.HttpResponseFactory;
 import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.handler.GetHandler;
+import protocol.handler.HeadHandler;
 import protocol.handler.IRequestHandler;
 import protocol.handler.PutHandler;
 
@@ -36,6 +37,7 @@ public class ConnectionHandler implements Runnable {
 		handlers = new HashMap<String, IRequestHandler>();
 		
 		handlers.put("GET", new GetHandler(server.getRootDirectory()));
+		handlers.put("HEAD", new HeadHandler(server.getRootDirectory()));
 		handlers.put("PUT", new PutHandler(server.getRootDirectory()));
 	}
 

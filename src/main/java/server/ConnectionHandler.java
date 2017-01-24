@@ -121,7 +121,7 @@ public class ConnectionHandler implements Runnable {
 			} else {
 				IRequestHandler handler = handlers.get(request.getMethod().toUpperCase());
 				if(handler != null)
-					handler.handle(request);
+					response = handler.handle(request);
 				else {
 					response = badProtocolRequest(request);
 				}

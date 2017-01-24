@@ -130,6 +130,17 @@ public class ServerEndToEndTest {
 		assertEquals("test", fileContents);
 	}
 	
+	@Test
+	public void testHead() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+		HttpResponse responseGet = requestGet.execute();
+		String fileContents = convertStreamToString(responseGet.getContent());
+		assertEquals(responseGet.getStatusCode(), 200);
+		assertEquals("", fileContents);
+	}
+	
 	static String convertStreamToString(java.io.InputStream is) {
 		java.util.Scanner s = null;
 		try {

@@ -14,6 +14,7 @@ import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.handler.GetHandler;
 import protocol.handler.IRequestHandler;
+import protocol.handler.PutHandler;
 
 /**
  * This class is responsible for handling a incoming request by creating a
@@ -35,6 +36,7 @@ public class ConnectionHandler implements Runnable {
 		handlers = new HashMap<String, IRequestHandler>();
 		
 		handlers.put("GET", new GetHandler(server.getRootDirectory()));
+		handlers.put("PUT", new PutHandler(server.getRootDirectory()));
 	}
 
 	/**
@@ -96,6 +98,7 @@ public class ConnectionHandler implements Runnable {
 			// Means there was an error, now write the response object to the
 			// socket
 			try {
+				
 				response.write(outStream);
 				// System.out.println(response);
 			} catch (Exception e) {

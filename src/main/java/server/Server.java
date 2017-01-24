@@ -35,10 +35,9 @@ import org.apache.logging.log4j.Logger;
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
-public class Server implements Runnable {
+public class Server {
 	private String rootDirectory;
 	private int port;
-	private boolean stop;
 	private ServerSocket welcomeSocket;
 	
 	Logger logger = LogManager.getLogger(this.getClass());
@@ -50,7 +49,6 @@ public class Server implements Runnable {
 	public Server(String rootDirectory, int port) {
 		this.rootDirectory = rootDirectory;
 		this.port = port;
-		this.stop = false;
 	}
 
 	/**
@@ -77,7 +75,7 @@ public class Server implements Runnable {
 	 * TCP connection request and creates a {@link ConnectionHandler} for
 	 * the request.
 	 */
-	public void run() {
+	public void start() {
 		try {
 			this.welcomeSocket = new ServerSocket(port);
 		} catch (IOException e1) {
@@ -85,46 +83,32 @@ public class Server implements Runnable {
 		}
 		
 		try {
-			
 			// Now keep welcoming new connections until stop flag is set to true
+			logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
 			while(true) {
 				// Listen for incoming socket connection
 				// This method block until somebody makes a request
-				Socket connectionSocket = this.welcomeSocket.accept();
-				
-				// Come out of the loop if the stop flag is set
-				if(this.stop)
-					break;
-				
+				Socket connectionSocket = welcomeSocket.accept();
 				// Create a handler for this incoming connection and start the handler in a new thread
 				ConnectionHandler handler = new ConnectionHandler(this, connectionSocket);
 				new Thread(handler).start();
 			}
-			this.welcomeSocket.close();
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 		}
+			
+		
 	}
 	
 	/**
 	 * Stops the server from listening further.
 	 */
 	public synchronized void stop() {
-		if(this.stop)
-			return;
-		
-		// Set the stop flag to be true
-		this.stop = true;
+		if(!welcomeSocket.isClosed())
 		try {
-			// This will force welcomeSocket to come out of the blocked accept() method 
-			// in the main loop of the start() method
-			Socket socket = new Socket(InetAddress.getLocalHost(), port);
-			
-			// We do not have any other job for this socket so just close it
-			socket.close();
-		}
-		catch(Exception e){}
+			welcomeSocket.close();
+		} catch (IOException e) { }
 	}
 	
 	/**

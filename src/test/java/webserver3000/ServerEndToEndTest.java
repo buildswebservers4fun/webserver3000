@@ -77,7 +77,13 @@ public class ServerEndToEndTest {
 		}
 		
 		server = new Server(tempRootDirectory, port);
-		runner = new Thread(server);
+		runner = new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				server.start();
+			}
+		});
 		runner.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread t, Throwable e) {

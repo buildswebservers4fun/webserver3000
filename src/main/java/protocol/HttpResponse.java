@@ -126,7 +126,7 @@ public class HttpResponse {
 		out.write(line.getBytes());
 		
 		// Write header fields if there is something to write in header field
-		if(header != null && !header.isEmpty()) {
+		if(header != null) {
 			for(Map.Entry<String, String> entry : header.entrySet()) {
 				String key = entry.getKey();
 				String value = entry.getValue();

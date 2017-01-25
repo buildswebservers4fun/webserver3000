@@ -37,6 +37,7 @@ public class PutHandler implements IRequestHandler {
 		
 		try {
 			char[] information = request.getBody();
+			file.getParentFile().mkdirs();
 			file.createNewFile();
 			FileWriter writer = new FileWriter(file);
 			writer.write(information);

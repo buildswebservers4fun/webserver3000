@@ -1,6 +1,5 @@
 package server;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -12,6 +11,7 @@ import protocol.HttpResponse;
 import protocol.HttpResponseFactory;
 import protocol.Protocol;
 import protocol.ProtocolException;
+import protocol.handler.DeleteHandler;
 import protocol.handler.GetHandler;
 import protocol.handler.HeadHandler;
 import protocol.handler.IRequestHandler;
@@ -39,6 +39,7 @@ public class ConnectionHandler implements Runnable {
 		handlers.put("GET", new GetHandler(server.getRootDirectory()));
 		handlers.put("HEAD", new HeadHandler(server.getRootDirectory()));
 		handlers.put("PUT", new PutHandler(server.getRootDirectory()));
+		handlers.put("DELETE", new DeleteHandler(server.getRootDirectory()));
 	}
 
 	/**

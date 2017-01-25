@@ -143,6 +143,7 @@ public class ServerEndToEndTest {
 		assertEquals("", fileContents);
 	}
 	
+	@Test
 	public void testPutFileExists() throws InterruptedException, IOException {
 		//tests that a put request overwrites the file if it does exist
 		
@@ -178,6 +179,27 @@ public class ServerEndToEndTest {
 		
 		delete.delete();
 		assertEquals(false, delete.exists());
+	}
+	
+	@Test
+	public void testDeleteFileExists() throws InterruptedException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		File delete = new File(tempRootDirectory, "testFile2.txt");
+		
+		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile2.txt")));
+		HttpResponse responseDelete = requestDelete.execute();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile2.txt")));
+		HttpResponse responseGet = requestGet.execute();
+		
+		assertEquals(200, responseDelete.getStatusCode());
+		assertEquals(404, responseGet.getStatusCode());
+	}
+	
+	
+	public void testDeleteFileDoesntExist() throws InterruptedException, IOException {
+		
 	}
 	
 	static String convertStreamToString(java.io.InputStream is) {

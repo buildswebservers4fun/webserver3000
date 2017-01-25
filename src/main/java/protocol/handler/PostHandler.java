@@ -3,6 +3,8 @@ package protocol.handler;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
@@ -38,8 +40,9 @@ public class PostHandler implements IRequestHandler {
 				return HttpResponseFactory.create200OK(file, Protocol.CLOSE);
 			}
 		} else {
-			// Create a new file
+			// Create parent directories and new file
 			try {
+				file.getParentFile().mkdirs();
 				char[] information = request.getBody();
 				file.createNewFile();
 				FileWriter writer = new FileWriter(file);

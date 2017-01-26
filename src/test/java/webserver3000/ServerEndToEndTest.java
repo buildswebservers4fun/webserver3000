@@ -276,12 +276,7 @@ public class ServerEndToEndTest {
 	public void testDeleteFileDoesntExist() throws InterruptedException, IOException {
 		
 	}
-	
-	static String convertStreamToString(java.io.InputStream is) {
-		java.util.Scanner s = null;
-		return s.toString();
-	}
-	
+
 		public void testPutDirectory() throws InterruptedException, IOException {
 		//tests that a put request creates a new file if the file doesnt exist
 		

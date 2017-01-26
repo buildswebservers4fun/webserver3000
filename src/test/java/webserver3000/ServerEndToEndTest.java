@@ -52,7 +52,7 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ServerEndToEndTest {
-	final String tempRootDirectory = "./tempWeb";
+	final String tempRootDirectory = "tempWeb";
 	final String SERVER_PATH = "http://localhost:";
 	final int port = 47097;
 	File tempDir;
@@ -260,23 +260,20 @@ public class ServerEndToEndTest {
 	public void testDeleteFileExists() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 		
-		File file = new File(tempRootDirectory, "testFile.txt");
+		File file = new File(tempRootDirectory, "testFile3.txt");
 		file.createNewFile();
 		
-		HttpRequest requestGet1 = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+		HttpRequest requestGet1 = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile3.txt")));
 		HttpResponse responseGet1 = requestGet1.execute();
 		
 		assertEquals(200, responseGet1.getStatusCode());
 		System.out.println("This assert passes");
-		
-		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+		assertEquals(true, file.exists());
+		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile3.txt")));
 		HttpResponse responseDelete = requestDelete.execute();
 		
-		HttpRequest requestGet2 = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
-		HttpResponse responseGet2 = requestGet2.execute();
-		
 		assertEquals(200, responseDelete.getStatusCode());
-		assertEquals(404, responseGet2.getStatusCode());
+		assertEquals(false, file.exists());
 	}
 	
 	@Test
@@ -290,9 +287,6 @@ public class ServerEndToEndTest {
 		} catch (HttpResponseException e) {
 			//pass
 		}
-		
-		
-		
 	}
 
 		public void testPutDirectory() throws InterruptedException, IOException {

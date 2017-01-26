@@ -15,15 +15,15 @@ public class DeleteResponse extends AFileResponce {
 		super(version, status, phrase, header, file, connection);
 	}
 
-	public static IHttpResponse get200(File file, String connection) {
-		IHttpResponse response = new DeleteResponse(Protocol.VERSION, Protocol.OK_CODE, 
-				Protocol.OK_TEXT, new HashMap<String, String>(), file, connection);
+	public static AHttpResponse get200(File file, String connection) {
+		AHttpResponse response = new DeleteResponse(Protocol.VERSION, Protocol.OK_CODE, 
+				Protocol.OK_TEXT, new HashMap<String, String>(), null, connection);
 		
 		return response;
 	}
 	
-	public static IHttpResponse get404(String connection) {
-		IHttpResponse response = new DeleteResponse(Protocol.VERSION, Protocol.NOT_FOUND_CODE, 
+	public static AHttpResponse get404(String connection) {
+		AHttpResponse response = new DeleteResponse(Protocol.VERSION, Protocol.NOT_FOUND_CODE, 
 				Protocol.NOT_FOUND_TEXT, new HashMap<String, String>(), null, connection);
 				
 		return response;

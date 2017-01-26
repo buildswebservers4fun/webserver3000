@@ -1,6 +1,7 @@
 package protocol.handler;
 
 import java.io.File;
+import java.io.IOException;
 
 import protocol.HttpRequest;
 import protocol.Protocol;
@@ -24,11 +25,15 @@ public class DeleteHandler implements IRequestHandler {
 		
 		//File to delete exists
 		if(file.exists()) {
+			
+			String location = rootDirectory + "/" + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
+			File newfile = new File(location);
 			file.delete();
-			return DeleteResponse.get200(file, Protocol.CLOSE);
+			return DeleteResponse.get200(newfile, Protocol.CLOSE);
 			
 			
 		} else {
+			System.out.println("!!!!!!!!!!!!!!!!!!!!!!! File does not exists! Delete Handler Invoked!");
 			return DeleteResponse.get404(Protocol.CLOSE);
 		}
 		

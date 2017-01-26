@@ -1,8 +1,6 @@
 package protocol.response;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.FileNameMap;
@@ -14,25 +12,26 @@ import java.util.Map;
 import protocol.HttpResponse;
 import protocol.Protocol;
 
-public class GetResponse extends HttpResponse {
-
+public class PostResponse extends HttpResponse {
+	
 	public static HttpResponse get200(File file, String connection) {
-		HttpResponse response = new GetResponse(Protocol.VERSION, Protocol.OK_CODE, 
+		HttpResponse response = new PostResponse(Protocol.VERSION, Protocol.OK_CODE, 
 				Protocol.OK_TEXT, new HashMap<String, String>(), file, connection);
 		
 		return response;
 	}
 	
 	public static HttpResponse get404(String connection) {
-		HttpResponse response = new GetResponse(Protocol.VERSION, Protocol.NOT_FOUND_CODE, 
+		HttpResponse response = new PostResponse(Protocol.VERSION, Protocol.NOT_FOUND_CODE, 
 				Protocol.NOT_FOUND_TEXT, new HashMap<String, String>(), null, connection);
 				
 		return response;
 	}
-	
-	private GetResponse(String version, int status, String phrase, Map<String, String> header, File file, String connection) {
+
+	private PostResponse(String version, int status, String phrase, Map<String, String> header, File file,
+			String connection) {
 		super(version, status, phrase, header, file, connection);
-		
+
 		// Lets add last modified date for the file
 		long timeSinceEpoch = file.lastModified();
 		Date modifiedTime = new Date(timeSinceEpoch);
@@ -55,21 +54,7 @@ public class GetResponse extends HttpResponse {
 
 	@Override
 	public void writeBody(OutputStream out) throws IOException {
-		// We are reading a file
-		if(this.getStatus() == Protocol.OK_CODE && this.getFile() != null) {
-			// Process text documents
-			FileInputStream fileInStream = new FileInputStream(this.getFile());
-			BufferedInputStream inStream = new BufferedInputStream(fileInStream, Protocol.CHUNK_LENGTH);
-			
-			byte[] buffer = new byte[Protocol.CHUNK_LENGTH];
-			int bytesRead = 0;
-			// While there is some bytes to read from file, read each chunk and send to the socket out stream
-			while((bytesRead = inStream.read(buffer)) != -1) {
-				out.write(buffer, 0, bytesRead);
-			}
-			// Close the file input stream, we are done reading
-			inStream.close();
-		}
+		// TODO Auto-generated method stub
 	}
 
 }

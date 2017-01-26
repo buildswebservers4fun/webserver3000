@@ -1,15 +1,14 @@
 package protocol.handler;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
 import protocol.Protocol;
+import protocol.response.GenericResponse;
+import protocol.response.PutResponse;
 
 public class PutHandler implements IRequestHandler {
 
@@ -21,8 +20,6 @@ public class PutHandler implements IRequestHandler {
 
 	@Override
 	public HttpResponse handle(HttpRequest request) {
-		HttpResponse response;
-
 		String uri = request.getUri();
 		boolean exists = false;
 
@@ -30,7 +27,7 @@ public class PutHandler implements IRequestHandler {
 
 		if (file.exists()) {
 			if(file.isDirectory()){
-				return HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+				return GenericResponse.get400(Protocol.CLOSE);
 			}
 			exists = true;
 		}
@@ -47,9 +44,9 @@ public class PutHandler implements IRequestHandler {
 		}
 
 		if (exists){
-			return HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+			return PutResponse.get200(file, Protocol.CLOSE);
 		}
-		return HttpResponseFactory.create201Created(file, Protocol.CLOSE);
+		return PutResponse.get201(file, Protocol.CLOSE);
 	}
 
 }

@@ -4,13 +4,13 @@ import java.io.File;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
 import protocol.Protocol;
+import protocol.response.HeadResponse;
 
 public class HeadHandler implements IRequestHandler {
 
 	private String rootDirectory;
-
+	
 	public HeadHandler(String rootDirectory) {
 		this.rootDirectory = rootDirectory;
 	}
@@ -36,21 +36,19 @@ public class HeadHandler implements IRequestHandler {
 				file = new File(location);
 				if (file.exists()) {
 					// Lets create 200 OK response
-					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-					response.setHead(true);
+					response = HeadResponse.get200(file, Protocol.CLOSE);
 				} else {
 					// File does not exist so lets create 404 file not found
 					// code
-					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+					response = HeadResponse.get404(Protocol.CLOSE);
 				}
 			} else { // Its a file
 						// Lets create 200 OK response
-				response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
-				response.setHead(true);
+				response = HeadResponse.get200(file, Protocol.CLOSE);
 			}
 		} else {
 			// File does not exist so lets create 404 file not found code
-			response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+			response = HeadResponse.get404(Protocol.CLOSE);
 		}
 		return response;
 	}

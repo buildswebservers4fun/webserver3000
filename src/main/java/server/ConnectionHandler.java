@@ -8,7 +8,6 @@ import java.util.Map;
 
 import protocol.HttpRequest;
 import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
 import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.handler.GetHandler;
@@ -16,6 +15,7 @@ import protocol.handler.HeadHandler;
 import protocol.handler.IRequestHandler;
 import protocol.handler.PostHandler;
 import protocol.handler.PutHandler;
+import protocol.response.GenericResponse;
 
 /**
  * This class is responsible for handling a incoming request by creating a
@@ -26,20 +26,18 @@ import protocol.handler.PutHandler;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ConnectionHandler implements Runnable {
-	private Server server;
 	private Socket socket;
 	private Map<String, IRequestHandler> handlers;
 	
 	
-	public ConnectionHandler(Server server, Socket socket) {
-		this.server = server;
+	public ConnectionHandler(String rootDirectory, Socket socket) {
 		this.socket = socket;
 		handlers = new HashMap<String, IRequestHandler>();
 		
-		handlers.put("GET", new GetHandler(server.getRootDirectory()));
-		handlers.put("HEAD", new HeadHandler(server.getRootDirectory()));
-		handlers.put("PUT", new PutHandler(server.getRootDirectory()));
-		handlers.put("POST", new PostHandler(server.getRootDirectory()));
+		handlers.put("GET", new GetHandler(rootDirectory));
+		handlers.put("HEAD", new HeadHandler(rootDirectory));
+		handlers.put("PUT", new PutHandler(rootDirectory));
+		handlers.put("POST", new PostHandler(rootDirectory));
 	}
 
 	/**
@@ -88,13 +86,13 @@ public class ConnectionHandler implements Runnable {
 			// Protocol.BAD_REQUEST_CODE and Protocol.NOT_SUPPORTED_CODE
 			int status = pe.getStatus();
 			if (status == Protocol.BAD_REQUEST_CODE) {
-				response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+				response = GenericResponse.get400(Protocol.CLOSE);
 			}
 			// TODO: Handle version not supported code as well
 		} catch (Exception e) {
 			e.printStackTrace();
 			// For any other error, we will create bad request response as well
-			response = HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+			response = GenericResponse.get400(Protocol.CLOSE);
 		}
 
 		if (response != null) {
@@ -123,13 +121,13 @@ public class ConnectionHandler implements Runnable {
 				// equal to the
 				// "request.version" string ignoring the case of the letters in
 				// both strings
-				response = badProtocolRequest(request);
+				response = GenericResponse.get400(Protocol.CLOSE);
 			} else {
 				IRequestHandler handler = handlers.get(request.getMethod().toUpperCase());
 				if(handler != null)
 					response = handler.handle(request);
 				else {
-					response = badProtocolRequest(request);
+					response = GenericResponse.get400(Protocol.CLOSE);
 				}
 			}
 		} catch (Exception e) {
@@ -145,9 +143,5 @@ public class ConnectionHandler implements Runnable {
 			// We will ignore this exception
 			e.printStackTrace();
 		}
-	}
-
-	private HttpResponse badProtocolRequest(HttpRequest request) {
-		return HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
 	}
 }

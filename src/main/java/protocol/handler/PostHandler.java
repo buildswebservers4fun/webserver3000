@@ -5,9 +5,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
 import protocol.Protocol;
 import protocol.response.GenericResponse;
+import protocol.response.IHttpResponse;
 import protocol.response.PostResponse;
 
 public class PostHandler implements IRequestHandler {
@@ -19,7 +19,7 @@ public class PostHandler implements IRequestHandler {
 	}
 
 	@Override
-	public HttpResponse handle(HttpRequest request) {
+	public IHttpResponse handle(HttpRequest request) {
 		String uri = request.getUri();
 		File file = new File(rootDirectory, uri);
 

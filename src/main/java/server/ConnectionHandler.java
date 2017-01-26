@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
 import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.handler.GetHandler;
@@ -16,11 +15,12 @@ import protocol.handler.IRequestHandler;
 import protocol.handler.PostHandler;
 import protocol.handler.PutHandler;
 import protocol.response.GenericResponse;
+import protocol.response.IHttpResponse;
 
 /**
  * This class is responsible for handling a incoming request by creating a
  * {@link HttpRequest} object and sending the appropriate response be creating a
- * {@link HttpResponse} object. It implements {@link Runnable} to be used in
+ * {@link AHttpResponse} object. It implements {@link Runnable} to be used in
  * multi-threaded environment.
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
@@ -50,7 +50,7 @@ public class ConnectionHandler implements Runnable {
 	/**
 	 * The entry point for connection handler. It first parses incoming request
 	 * and creates a {@link HttpRequest} object, then it creates an appropriate
-	 * {@link HttpResponse} object and sends the response back to the client
+	 * {@link AHttpResponse} object and sends the response back to the client
 	 * (web browser).
 	 */
 	public void run() {
@@ -74,7 +74,7 @@ public class ConnectionHandler implements Runnable {
 		// At this point we have the input and output stream of the socket
 		// Now lets create a HttpRequest object
 		HttpRequest request = null;
-		HttpResponse response = null;
+		IHttpResponse response = null;
 		try {
 			request = HttpRequest.read(inStream);
 			System.out.println(request);

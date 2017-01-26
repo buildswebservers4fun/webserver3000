@@ -3,9 +3,9 @@ package protocol.handler;
 import java.io.File;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
 import protocol.Protocol;
 import protocol.response.HeadResponse;
+import protocol.response.IHttpResponse;
 
 public class HeadHandler implements IRequestHandler {
 
@@ -16,8 +16,8 @@ public class HeadHandler implements IRequestHandler {
 	}
 	
 	@Override
-	public HttpResponse handle(HttpRequest request) {
-		HttpResponse response;
+	public IHttpResponse handle(HttpRequest request) {
+		IHttpResponse response;
 		// Map<String, String> header = request.getHeader();
 		// String date = header.get("if-modified-since");
 		// String hostName = header.get("host");

@@ -1,8 +1,8 @@
 package protocol.handler;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
+import protocol.response.IHttpResponse;
 
 public interface IRequestHandler {
-	HttpResponse handle(HttpRequest request);
+	IHttpResponse handle(HttpRequest request);
 }

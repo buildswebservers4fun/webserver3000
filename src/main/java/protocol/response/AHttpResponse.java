@@ -19,7 +19,7 @@
  * 
  */
  
-package protocol;
+package protocol.response;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -30,12 +30,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
+import protocol.Protocol;
+
 /**
  * Represents a response object for HTTP.
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
-public abstract class HttpResponse {
+abstract class AHttpResponse implements IHttpResponse {
 	private String version;
 	private int status;
 	private String phrase;
@@ -51,7 +53,7 @@ public abstract class HttpResponse {
 	 * @param header The header field map.
 	 * @param file The file to be sent.
 	 */
-	public HttpResponse(String version, int status, String phrase, Map<String, String> header, File file, String connection) {
+	public AHttpResponse(String version, int status, String phrase, Map<String, String> header, File file, String connection) {
 		this.version = version;
 		this.status = status;
 		this.phrase = phrase;

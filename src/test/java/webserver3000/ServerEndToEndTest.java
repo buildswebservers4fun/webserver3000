@@ -279,8 +279,19 @@ public class ServerEndToEndTest {
 		assertEquals(404, responseGet2.getStatusCode());
 	}
 	
-	
+	@Test
 	public void testDeleteFileDoesntExist() throws InterruptedException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/notARealFile.txt")));
+		try {
+			requestDelete.execute();
+			fail("Should have thrown an exception");
+		} catch (HttpResponseException e) {
+			//pass
+		}
+		
+		
 		
 	}
 

@@ -34,7 +34,7 @@ public class PostHandler implements IRequestHandler {
 					writer.write(information);
 					writer.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					return GenericResponse.get400(Protocol.CLOSE);
 				}
 				return PostResponse.get200(file, Protocol.CLOSE);
 			}
@@ -48,9 +48,9 @@ public class PostHandler implements IRequestHandler {
 				writer.write(information);
 				writer.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				return GenericResponse.get400(Protocol.CLOSE);
 			}
-			return PostResponse.get200(file, Protocol.CLOSE);
+			return PostResponse.get201(file, Protocol.CLOSE);
 		}
 	}
 }

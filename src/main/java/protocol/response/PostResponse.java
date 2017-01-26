@@ -10,15 +10,22 @@ import protocol.Protocol;
 
 public class PostResponse extends AFileResponce {
 	
-	public static AHttpResponse get200(File file, String connection) {
-		AHttpResponse response = new PostResponse(Protocol.VERSION, Protocol.OK_CODE, 
+	public static IHttpResponse get200(File file, String connection) {
+		IHttpResponse response = new PostResponse(Protocol.VERSION, Protocol.OK_CODE, 
 				Protocol.OK_TEXT, new HashMap<String, String>(), file, connection);
 		
 		return response;
 	}
 	
-	public static AHttpResponse get404(String connection) {
-		AHttpResponse response = new PostResponse(Protocol.VERSION, Protocol.NOT_FOUND_CODE, 
+	public static IHttpResponse get201(File file, String connection) {
+		IHttpResponse response = new PostResponse(Protocol.VERSION, Protocol.CREATED_CODE, 
+				Protocol.OK_TEXT, new HashMap<String, String>(), file, connection);
+		
+		return response;
+	}
+	
+	public static IHttpResponse get404(String connection) {
+		IHttpResponse response = new PostResponse(Protocol.VERSION, Protocol.NOT_FOUND_CODE, 
 				Protocol.NOT_FOUND_TEXT, new HashMap<String, String>(), null, connection);
 				
 		return response;
@@ -35,5 +42,4 @@ public class PostResponse extends AFileResponce {
 			writeFile(out);
 		}
 	}
-
 }

@@ -40,7 +40,8 @@ public class PutHandler implements IRequestHandler {
 			writer.write(information);
 			writer.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			// TODO Make this server error
+			return GenericResponse.get400(Protocol.CLOSE);
 		}
 
 		if (exists){

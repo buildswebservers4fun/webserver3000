@@ -173,7 +173,7 @@ public class HttpRequest {
 		}
 		buffer.append("------------- Body ---------------\n");
 		buffer.append(this.body);
-		buffer.append("----------------------------------\n");
+		buffer.append("\n----------------------------------\n");
 		return buffer.toString();
 	}
 }

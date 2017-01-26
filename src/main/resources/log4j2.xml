@@ -2,7 +2,7 @@
 <Configuration status="warn" name="WebServer3000" packages="">
   <Appenders>
     <Console name="STDOUT" target="SYSTEM_OUT">
-      <PatternLayout pattern="%m%n"/>
+      <PatternLayout pattern="%l %m%n"/>
     </Console>
     <File name="Error" fileName="logs/error.log">
       <PatternLayout pattern="%m%n"/>
@@ -11,7 +11,7 @@
       <PatternLayout pattern="%m%n"/>
     </File>
     <File name="All" fileName="logs/app.log">
-      <PatternLayout pattern="%m%n"/>
+      <PatternLayout pattern="%l %m%n"/>
     </File>
   </Appenders>
   <Loggers>

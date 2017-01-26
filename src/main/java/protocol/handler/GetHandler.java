@@ -3,9 +3,9 @@ package protocol.handler;
 import java.io.File;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
 import protocol.Protocol;
+import protocol.response.GetResponse;
+import protocol.response.IHttpResponse;
 
 public class GetHandler implements IRequestHandler {
 
@@ -14,10 +14,10 @@ public class GetHandler implements IRequestHandler {
 	public GetHandler(String rootDirectory) {
 		this.rootDirectory = rootDirectory;
 	}
-	
+
 	@Override
-	public HttpResponse handle(HttpRequest request) {
-		HttpResponse response;
+	public IHttpResponse handle(HttpRequest request) {
+		IHttpResponse response;
 		// Map<String, String> header = request.getHeader();
 		// String date = header.get("if-modified-since");
 		// String hostName = header.get("host");
@@ -36,19 +36,19 @@ public class GetHandler implements IRequestHandler {
 				file = new File(location);
 				if (file.exists()) {
 					// Lets create 200 OK response
-					response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+					response = GetResponse.get200(file, Protocol.CLOSE);
 				} else {
 					// File does not exist so lets create 404 file not found
 					// code
-					response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+					response = GetResponse.get404(Protocol.CLOSE);
 				}
 			} else { // Its a file
 						// Lets create 200 OK response
-				response = HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+				response = GetResponse.get200(file, Protocol.CLOSE);
 			}
 		} else {
 			// File does not exist so lets create 404 file not found code
-			response = HttpResponseFactory.create404NotFound(Protocol.CLOSE);
+			response = GetResponse.get404(Protocol.CLOSE);
 		}
 		return response;
 	}

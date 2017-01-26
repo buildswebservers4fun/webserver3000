@@ -3,9 +3,9 @@ package protocol.handler;
 import java.io.File;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
 import protocol.Protocol;
+import protocol.response.DeleteResponse;
+import protocol.response.IHttpResponse;
 
 public class DeleteHandler implements IRequestHandler {
 
@@ -16,8 +16,8 @@ public class DeleteHandler implements IRequestHandler {
 	}
 	
 	@Override
-	public HttpResponse handle(HttpRequest request) {
-		HttpResponse response;
+	public IHttpResponse handle(HttpRequest request) {
+		IHttpResponse response;
 		
 		String uri = request.getUri();
 		
@@ -26,11 +26,11 @@ public class DeleteHandler implements IRequestHandler {
 		//File to delete exists
 		if(file.exists()) {
 			file.delete();
-			return HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+			return DeleteResponse.get200(file, Protocol.CLOSE);
 			
 			
 		} else {
-			return HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+			return DeleteResponse.get404(Protocol.CLOSE);
 		}
 		
 	}

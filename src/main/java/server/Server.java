@@ -22,9 +22,9 @@
 package server;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -90,9 +90,11 @@ public class Server {
 				// This method block until somebody makes a request
 				Socket connectionSocket = welcomeSocket.accept();
 				// Create a handler for this incoming connection and start the handler in a new thread
-				ConnectionHandler handler = new ConnectionHandler(this, connectionSocket);
+				ConnectionHandler handler = new ConnectionHandler(this.getRootDirectory(), connectionSocket);
 				new Thread(handler).start();
 			}
+		} catch (SocketException e) {
+			// Ignore these
 		}
 		catch(Exception e) {
 			e.printStackTrace();

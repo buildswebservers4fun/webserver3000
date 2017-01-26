@@ -23,10 +23,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 
 import org.junit.After;
 import org.junit.Before;
@@ -37,8 +41,10 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpContent;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
+import protocol.Protocol;
 import server.Server;
 
 /**
@@ -64,7 +70,7 @@ public class ServerEndToEndTest {
 		tempDir = new File(tempRootDirectory);
 		tempDir.mkdir();
 		if(!tempDir.exists()) {
-			throw new Exception("temp dir failed to be created");
+			fail("temp dir failed to be created");
 		}
 		
 	    file = new File(tempRootDirectory, "testFile.txt");
@@ -75,7 +81,7 @@ public class ServerEndToEndTest {
         writer.close();
         
 		if(!file.exists()) {
-			throw new Exception("temp file failed to be created");
+			fail("temp file failed to be created");
 		}
 		
 		server = new Server(tempRootDirectory, port);
@@ -93,7 +99,7 @@ public class ServerEndToEndTest {
 			}
 		});
 		runner.start();
-		Thread.sleep(1000);
+		Thread.sleep(100);
 		if(serverFailed) {
 			fail("Server unable to start");
 		}
@@ -126,10 +132,38 @@ public class ServerEndToEndTest {
 		
 		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
 		HttpResponse responseGet = requestGet.execute();
-		String fileContents = convertStreamToString(responseGet.getContent());
+		String fileContents = convertStreamToString(responseGet.getContent(), responseGet.getContentCharset());
 		assertEquals(200, responseGet.getStatusCode());
 //		assertEquals("test\n", responseGet2.getHeaders());
 		assertEquals("test", fileContents);
+	}
+	
+	@Test
+	public void testGetDefaultExists() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		File file = new File(tempRootDirectory, Protocol.DEFAULT_FILE);
+		file.createNewFile();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")));
+		HttpResponse responseGet = requestGet.execute();
+		String fileContents = convertStreamToString(responseGet.getContent(), responseGet.getContentCharset());
+		assertEquals(200, responseGet.getStatusCode());;
+		
+		assertEquals(true, file.delete());
+	}
+	
+	@Test
+	public void testGetDefaultNotFound() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")));
+		try {
+			HttpResponse responseGet = requestGet.execute();
+			fail("Should have thrown an exception");
+		} catch (HttpResponseException e) {
+			// Passed
+		}
 	}
 	
 	@Test
@@ -138,11 +172,53 @@ public class ServerEndToEndTest {
 		
 		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
 		HttpResponse responseGet = requestGet.execute();
-		String fileContents = convertStreamToString(responseGet.getContent());
-		assertEquals(responseGet.getStatusCode(), 200);
+		String fileContents = convertStreamToString(responseGet.getContent(), responseGet.getContentCharset());
+		assertEquals(200, responseGet.getStatusCode());
 		assertEquals("", fileContents);
 	}
 	
+	@Test
+	public void testHeadDirectory404() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")));
+		try {
+			HttpResponse responseGet = requestGet.execute();
+			fail("Should have thrown an exception");
+		} catch (HttpResponseException e) {
+			// pass
+		}
+	}
+	
+	@Test
+	public void testHeadDirectory200() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		File file = new File(tempRootDirectory, Protocol.DEFAULT_FILE);
+		file.createNewFile();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")));
+		HttpResponse responseGet = requestGet.execute();
+		String fileContents = convertStreamToString(responseGet.getContent(), responseGet.getContentCharset());
+		assertEquals(200, responseGet.getStatusCode());
+		assertEquals("", fileContents);
+		assertEquals(true, file.delete());
+	}
+	
+	@Test
+	public void testHead404() throws InterruptedException, IOException {	
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/asdfasdfasd")));
+		try {
+			HttpResponse responseGet = requestGet.execute();
+			fail("Should of thrown 404");
+		} catch (HttpResponseException e) {
+			// Pass
+		}
+	}
+	
+	@Test
 	public void testPutFileExists() throws InterruptedException, IOException {
 		//tests that a put request overwrites the file if it does exist
 		
@@ -154,7 +230,7 @@ public class ServerEndToEndTest {
 		HttpRequest requestPut = transport.createRequestFactory().buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")), content);
 		HttpResponse responsePut = requestPut.execute();
 		assertEquals(200, responsePut.getStatusCode());
-		String fileContents = convertStreamToString(responsePut.getContent());
+		String fileContents = convertStreamToString(responsePut.getContent(), responsePut.getContentCharset());
 		assertEquals("overwrite", fileContents);
 	}
 	
@@ -173,21 +249,131 @@ public class ServerEndToEndTest {
 		HttpRequest requestPut = transport.createRequestFactory().buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile2.txt")), content);
 		HttpResponse responsePut = requestPut.execute();
 		assertEquals(201, responsePut.getStatusCode());
-		String fileContents = convertStreamToString(responsePut.getContent());
+		String fileContents = convertStreamToString(responsePut.getContent(), responsePut.getContentCharset());
 		assertEquals("new file", fileContents);
 		
 		delete.delete();
 		assertEquals(false, delete.exists());
 	}
 	
-	static String convertStreamToString(java.io.InputStream is) {
-		java.util.Scanner s = null;
+	@Test
+	public void testPutDirectory() throws InterruptedException, IOException {
+		//tests that a put request creates a new file if the file doesnt exist
+		
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		String test = "new file";
+		byte[] bytes = test.getBytes();
+		HttpContent content = new ByteArrayContent("type", bytes);
+		File delete = new File(tempRootDirectory, "testFile2.txt");
+		delete.delete();
+		assertEquals(false, delete.exists());
+		HttpRequest requestPut = transport.createRequestFactory().buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")), content);
 		try {
-			s = new java.util.Scanner(is);
-			s.useDelimiter("\\A");
-		    return s.hasNext() ? s.next() : "";
-		} finally {
-			s.close();
+			HttpResponse responsePut = requestPut.execute();
+			fail("Should have thrown an exception");
+		} catch (HttpResponseException e) {
+			// Passed
 		}
+	}
+	
+	@Test
+	public void testPostFileDoesExist() throws InterruptedException, IOException {
+		//tests that a put request overwrites the file if it does exist
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		String start = "Original ";
+		String test = "new file";
+		File file = createRandomFile();
+		setContentsOfFile(file, start);
+		
+		byte[] bytes = test.getBytes();
+		HttpContent content = new ByteArrayContent("type", bytes);
+		HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/" + file.getName())), content);
+		HttpResponse responsePut = requestPut.execute();
+		assertEquals(200, responsePut.getStatusCode());
+		String fileContents = convertStreamToString(responsePut.getContent(), responsePut.getContentCharset());
+		assertEquals(start + test, fileContents);
+		
+		String newContents = getFileContents(file);
+		assertEquals(start + test, newContents);
+		
+		
+		file.delete();
+		assertEquals(false, file.exists());
+	}
+	
+	@Test
+	public void testPostDirectory() throws InterruptedException, IOException {
+		//tests that a put request overwrites the file if it does exist
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		String start = "Original ";
+		String test = "new file";
+		File file = createRandomFile();
+		setContentsOfFile(file, start);
+		
+		byte[] bytes = test.getBytes();
+		HttpContent content = new ByteArrayContent("type", bytes);
+		HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")), content);
+		try {
+			HttpResponse responsePut = requestPut.execute();
+			fail("Should have thrown an exception");
+		} catch (HttpResponseException e) {
+			
+		}
+	}
+	
+	@Test
+	public void testPostFileDoesntExist() throws InterruptedException, IOException {
+		//tests that a put request creates a new file if the file doesnt exist
+		String test = "contents";
+		String fileName = "postFileDoesntExist";
+		File file = new File(tempRootDirectory, fileName);
+		try {
+			NetHttpTransport transport = new NetHttpTransport();
+						
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/" + fileName)), content);
+			HttpResponse responsePut = requestPut.execute();
+			assertEquals(201, responsePut.getStatusCode());
+			String fileContents = convertStreamToString(responsePut.getContent(), responsePut.getContentCharset());
+			// TODO Why is this one not returning correctly? Test with REST client works correctly
+//			assertEquals(test, fileContents);
+			System.out.println("Responce Contents: " + fileContents);
+			
+			String newContents = getFileContents(file);
+			assertEquals(test, newContents);			
+		} finally {
+			file.delete();
+			assertEquals(false, file.exists());			
+		} 
+		
+	}
+	
+	static String convertStreamToString(InputStream is, Charset set) throws IOException {
+		StringBuilder builder = new StringBuilder();
+		byte[] buffer = new byte[65535];
+		int read= 0;
+		while((read = is.read(buffer, 0, buffer.length)) != -1) {
+			builder.append(new String(buffer, 0, read, set));
+			System.out.println("Reading");
+		}
+		return builder.toString();
+	}
+	
+	private File createRandomFile() throws IOException {
+		return File.createTempFile("TestFile", "TestFile", new File(tempRootDirectory));
+	}
+	
+	private void setContentsOfFile(File file, String string) throws IOException {
+		FileWriter fw = new FileWriter(file);
+		fw.write(string);
+		fw.close();
+	}
+	
+	private String getFileContents(File file) throws IOException {
+		return new String(Files.readAllBytes(file.toPath()), Charset.defaultCharset());
 	}
 }

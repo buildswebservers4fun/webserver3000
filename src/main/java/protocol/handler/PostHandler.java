@@ -3,13 +3,12 @@ package protocol.handler;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import protocol.HttpRequest;
-import protocol.HttpResponse;
-import protocol.HttpResponseFactory;
 import protocol.Protocol;
+import protocol.response.GenericResponse;
+import protocol.response.IHttpResponse;
+import protocol.response.PostResponse;
 
 public class PostHandler implements IRequestHandler {
 	
@@ -20,13 +19,13 @@ public class PostHandler implements IRequestHandler {
 	}
 
 	@Override
-	public HttpResponse handle(HttpRequest request) {
+	public IHttpResponse handle(HttpRequest request) {
 		String uri = request.getUri();
 		File file = new File(rootDirectory, uri);
 
 		if (file.exists()) {
 			if(file.isDirectory()){
-				return HttpResponseFactory.create400BadRequest(Protocol.CLOSE);
+				return GenericResponse.get400(Protocol.CLOSE);
 			} else {
 				// Append data to existing file
 				try {
@@ -35,9 +34,9 @@ public class PostHandler implements IRequestHandler {
 					writer.write(information);
 					writer.close();
 				} catch (IOException e) {
-					e.printStackTrace();
+					return GenericResponse.get400(Protocol.CLOSE);
 				}
-				return HttpResponseFactory.create200OK(file, Protocol.CLOSE);
+				return PostResponse.get200(file, Protocol.CLOSE);
 			}
 		} else {
 			// Create parent directories and new file
@@ -49,9 +48,9 @@ public class PostHandler implements IRequestHandler {
 				writer.write(information);
 				writer.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				return GenericResponse.get400(Protocol.CLOSE);
 			}
-			return HttpResponseFactory.create201Created(file, Protocol.CLOSE);
+			return PostResponse.get201(file, Protocol.CLOSE);
 		}
 	}
 }

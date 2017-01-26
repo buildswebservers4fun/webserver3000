@@ -17,7 +17,6 @@ public class DeleteHandler implements IRequestHandler {
 	
 	@Override
 	public IHttpResponse handle(HttpRequest request) {
-		IHttpResponse response;
 		
 		String uri = request.getUri();
 		

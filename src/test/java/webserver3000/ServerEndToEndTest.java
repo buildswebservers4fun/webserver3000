@@ -260,16 +260,23 @@ public class ServerEndToEndTest {
 	public void testDeleteFileExists() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 		
-		File delete = new File(tempRootDirectory, "testFile2.txt");
+		File file = new File(tempRootDirectory, "testFile.txt");
+		file.createNewFile();
 		
-		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile2.txt")));
+		HttpRequest requestGet1 = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+		HttpResponse responseGet1 = requestGet1.execute();
+		
+		assertEquals(200, responseGet1.getStatusCode());
+		System.out.println("This assert passes");
+		
+		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
 		HttpResponse responseDelete = requestDelete.execute();
 		
-		HttpRequest requestGet = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile2.txt")));
-		HttpResponse responseGet = requestGet.execute();
+		HttpRequest requestGet2 = transport.createRequestFactory().buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+		HttpResponse responseGet2 = requestGet2.execute();
 		
 		assertEquals(200, responseDelete.getStatusCode());
-		assertEquals(404, responseGet.getStatusCode());
+		assertEquals(404, responseGet2.getStatusCode());
 	}
 	
 	

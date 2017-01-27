@@ -6,6 +6,6 @@
 This project is a Software Architecture project (csse477) for Chandan Rupakheti at Rose-Hulman Institute of Technology. In this project, we are building a web server that handles the standard requests (GET, POST, PUT, HEAD) from given barebones code. The authors of this project are Trent Punt, CJ Miller, and Davis Nygren.
 
 
-![UML of Webserver](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/raw/master/Docs/intialUML.png "UML of Webserver")
+![UML of Webserver](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/raw/master/Docs/diagram.png "UML of Webserver")
 
 ![Module Diagram](https://ada.csse.rose-hulman.edu/buildswebservers4fun/webserver3000/raw/master/Docs/moduleDiagram.JPG "Module Diagram")

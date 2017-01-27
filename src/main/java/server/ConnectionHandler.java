@@ -47,13 +47,6 @@ public class ConnectionHandler implements Runnable {
 	}
 
 	/**
-	 * @return the socket
-	 */
-	public Socket getSocket() {
-		return socket;
-	}
-
-	/**
 	 * The entry point for connection handler. It first parses incoming request
 	 * and creates a {@link HttpRequest} object, then it creates an appropriate
 	 * {@link IHttpResponse} object and sends the response back to the client

@@ -17,7 +17,7 @@ public class DeleteResponse extends AFileResponce {
 
 	public static AHttpResponse get200(File file, String connection) {
 		AHttpResponse response = new DeleteResponse(Protocol.VERSION, Protocol.OK_CODE, 
-				Protocol.OK_TEXT, new HashMap<String, String>(), null, connection);
+				Protocol.OK_TEXT, new HashMap<String, String>(), file, connection);
 		
 		return response;
 	}
@@ -31,10 +31,6 @@ public class DeleteResponse extends AFileResponce {
 
 	
 	@Override
-	public void writeBody(OutputStream out) throws IOException {
-		if(this.getStatus() == Protocol.OK_CODE && this.getFile() != null) {
-			writeFile(out);
-		}
-	}
+	public void writeBody(OutputStream out) throws IOException { }
 
 }

@@ -28,6 +28,7 @@ import java.net.SocketException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import utils.ErrorLogger;
 
 /**
  * This represents a welcoming server for the incoming
@@ -79,7 +80,9 @@ public class Server {
 		try {
 			this.welcomeSocket = new ServerSocket(port);
 		} catch (IOException e1) {
-			throw new RuntimeException("Server unable to start", e1);
+			RuntimeException e = new RuntimeException("Server unable to start", e1);
+			ErrorLogger.getInstance().error(e);
+			throw e;
 		}
 		
 		try {
@@ -97,7 +100,7 @@ public class Server {
 			// Ignore these
 		}
 		catch(Exception e) {
-			e.printStackTrace();
+			ErrorLogger.getInstance().error(e);
 		}
 			
 		

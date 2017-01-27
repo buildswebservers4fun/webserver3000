@@ -132,7 +132,7 @@ abstract class AHttpResponse implements IHttpResponse {
 	 * @param outStream The output stream
 	 * @throws Exception
 	 */
-	public void write(OutputStream outStream) throws Exception {
+	public void write(OutputStream outStream) throws IOException {
 		BufferedOutputStream out = new BufferedOutputStream(outStream, Protocol.CHUNK_LENGTH);
 
 		// First status line

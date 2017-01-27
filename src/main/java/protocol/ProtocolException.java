@@ -27,7 +27,7 @@ package protocol;
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
-public class ProtocolException extends Exception {
+public class ProtocolException extends ServerException {
 	private static final long serialVersionUID = -2475212356774585742L;
 	
 	private int status;

@@ -73,19 +73,12 @@ public class ConnectionHandler implements Runnable {
 			return;
 		}
 
-		// At this point we have the input and output stream of the socket
-		// Now lets create a HttpRequest object
 		HttpRequest request = null;
 		IHttpResponse response = null;
 		try {
 			request = HttpRequest.read(inStream);
 			AccessLogger.getInstance().info(request);
 		} catch (ProtocolException pe) {
-			// We have some sort of protocol exception. Get its status code and
-			// create response
-			// We know only two kind of exception is possible inside
-			// fromInputStream
-			// Protocol.BAD_REQUEST_CODE and Protocol.NOT_SUPPORTED_CODE
 			int status = pe.getStatus();
 			if (status == Protocol.BAD_REQUEST_CODE) {
 				response = GenericResponse.get400(Protocol.CLOSE);
@@ -94,22 +87,17 @@ public class ConnectionHandler implements Runnable {
             }
 		} catch (ServerException e) {
 			ErrorLogger.getInstance().error(e);
-			// For any other error, we will create bad request response as well
 			response = GenericResponse.get400(Protocol.CLOSE);
 		}
 
-		if (response != null) {
-			// Means there was an error, now write the response object to the
-			// socket
+        // Means there was an error, now write the response object to the
+        if (response != null) {
 			try {
-				
 				response.write(outStream);
-				// System.out.println(response);
 			} catch (IOException e) {
 				// We will ignore this exception
 				ErrorLogger.getInstance().error(e);
 			}
-
 			return;
 		}
 
@@ -130,9 +118,7 @@ public class ConnectionHandler implements Runnable {
         }
 
 		try {
-			// Write response and we are all done so close the socket
 			response.write(outStream);
-			// System.out.println(response);
 			socket.close();
 		} catch (IOException e) {
 			// We will ignore this exception

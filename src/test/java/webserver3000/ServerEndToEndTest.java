@@ -52,7 +52,7 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ServerEndToEndTest {
-	final String tempRootDirectory = "./tempWeb";
+	final String tempRootDirectory = "tempWeb";
 	final String SERVER_PATH = "http://localhost:";
 	final int port = 47097;
 	File tempDir;
@@ -257,7 +257,39 @@ public class ServerEndToEndTest {
 	}
 	
 	@Test
-	public void testPutDirectory() throws InterruptedException, IOException {
+	public void testDeleteFileExists() throws InterruptedException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		File file = new File(tempRootDirectory, "testFile3.txt");
+		file.createNewFile();
+		
+		HttpRequest requestGet1 = transport.createRequestFactory().buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile3.txt")));
+		HttpResponse responseGet1 = requestGet1.execute();
+		
+		assertEquals(200, responseGet1.getStatusCode());
+		System.out.println("This assert passes");
+		assertEquals(true, file.exists());
+		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile3.txt")));
+		HttpResponse responseDelete = requestDelete.execute();
+		
+		assertEquals(200, responseDelete.getStatusCode());
+		assertEquals(false, file.exists());
+	}
+	
+	@Test
+	public void testDeleteFileDoesntExist() throws InterruptedException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		HttpRequest requestDelete = transport.createRequestFactory().buildDeleteRequest(new GenericUrl(new URL(SERVER_PATH + port + "/notARealFile.txt")));
+		try {
+			requestDelete.execute();
+			fail("Should have thrown an exception");
+		} catch (HttpResponseException e) {
+			//pass
+		}
+	}
+
+		public void testPutDirectory() throws InterruptedException, IOException {
 		//tests that a put request creates a new file if the file doesnt exist
 		
 		NetHttpTransport transport = new NetHttpTransport();

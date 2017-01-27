@@ -9,6 +9,7 @@ import java.util.Map;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.ProtocolException;
+import protocol.handler.DeleteHandler;
 import protocol.handler.GetHandler;
 import protocol.handler.HeadHandler;
 import protocol.handler.IRequestHandler;
@@ -34,6 +35,7 @@ public class ConnectionHandler implements Runnable {
 		this.socket = socket;
 		handlers = new HashMap<String, IRequestHandler>();
 		
+		handlers.put("DELETE", new DeleteHandler(rootDirectory));
 		handlers.put("GET", new GetHandler(rootDirectory));
 		handlers.put("HEAD", new HeadHandler(rootDirectory));
 		handlers.put("PUT", new PutHandler(rootDirectory));

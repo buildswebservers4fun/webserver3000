@@ -7,6 +7,7 @@ import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.response.DeleteResponse;
 import protocol.response.IHttpResponse;
+import utils.AccessLogger;
 
 public class DeleteHandler implements IRequestHandler {
 
@@ -25,15 +26,10 @@ public class DeleteHandler implements IRequestHandler {
 		
 		//File to delete exists
 		if(file.exists()) {
-			
-			String location = rootDirectory + "/" + System.getProperty("file.separator") + Protocol.DEFAULT_FILE;
-			File newfile = new File(location);
 			file.delete();
-			return DeleteResponse.get200(newfile, Protocol.CLOSE);
-			
-			
+			return DeleteResponse.get200(file, Protocol.CLOSE);
 		} else {
-			System.out.println("!!!!!!!!!!!!!!!!!!!!!!! File does not exists! Delete Handler Invoked!");
+			AccessLogger.getInstance().info("File does not exists! Delete Handler Invoked!");
 			return DeleteResponse.get404(Protocol.CLOSE);
 		}
 		

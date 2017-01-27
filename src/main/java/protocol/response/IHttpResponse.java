@@ -1,7 +1,10 @@
 package protocol.response;
 
+import protocol.ServerException;
+
+import java.io.IOException;
 import java.io.OutputStream;
 
 public interface IHttpResponse {
-	public void write(OutputStream outStream) throws Exception;
+	void write(OutputStream outStream) throws IOException;
 }

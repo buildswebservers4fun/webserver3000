@@ -318,41 +318,47 @@ public class ServerEndToEndTest {
 		String test = "new file";
 		File file = createRandomFile();
 		setContentsOfFile(file, start);
-		
-		byte[] bytes = test.getBytes();
-		HttpContent content = new ByteArrayContent("type", bytes);
-		HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/" + file.getName())), content);
-		HttpResponse responsePut = requestPut.execute();
-		assertEquals(200, responsePut.getStatusCode());
-		String fileContents = convertStreamToString(responsePut.getContent(), responsePut.getContentCharset());
-		assertEquals(start + test, fileContents);
-		
-		String newContents = getFileContents(file);
-		assertEquals(start + test, newContents);
-		
-		
-		file.delete();
-		assertEquals(false, file.exists());
+		try {
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/" + file.getName())), content);
+			HttpResponse responsePut = requestPut.execute();
+			assertEquals(200, responsePut.getStatusCode());
+			String fileContents = convertStreamToString(responsePut.getContent(), responsePut.getContentCharset());
+			assertEquals(start + test, fileContents);
+
+			String newContents = getFileContents(file);
+			assertEquals(start + test, newContents);
+
+			file.delete();
+			assertEquals(false, file.exists());
+		} finally {
+			file.delete();
+		}
 	}
 	
 	@Test
 	public void testPostDirectory() throws InterruptedException, IOException {
 		//tests that a put request overwrites the file if it does exist
 		NetHttpTransport transport = new NetHttpTransport();
-		
+
 		String start = "Original ";
 		String test = "new file";
 		File file = createRandomFile();
 		setContentsOfFile(file, start);
-		
-		byte[] bytes = test.getBytes();
-		HttpContent content = new ByteArrayContent("type", bytes);
-		HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")), content);
 		try {
-			HttpResponse responsePut = requestPut.execute();
-			fail("Should have thrown an exception");
-		} catch (HttpResponseException e) {
-			
+
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPut = transport.createRequestFactory().buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/")), content);
+			try {
+				HttpResponse responsePut = requestPut.execute();
+				fail("Should have thrown an exception");
+			} catch (HttpResponseException e) {
+
+			}
+		} finally {
+			file.delete();
 		}
 	}
 	

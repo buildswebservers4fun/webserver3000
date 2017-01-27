@@ -1,5 +1,6 @@
 package server;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -9,6 +10,7 @@ import java.util.Map;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.ProtocolException;
+import protocol.ServerException;
 import protocol.handler.DeleteHandler;
 import protocol.handler.GetHandler;
 import protocol.handler.HeadHandler;
@@ -17,11 +19,13 @@ import protocol.handler.PostHandler;
 import protocol.handler.PutHandler;
 import protocol.response.GenericResponse;
 import protocol.response.IHttpResponse;
+import utils.AccessLogger;
+import utils.ErrorLogger;
 
 /**
  * This class is responsible for handling a incoming request by creating a
  * {@link HttpRequest} object and sending the appropriate response be creating a
- * {@link AHttpResponse} object. It implements {@link Runnable} to be used in
+ * {@link IHttpResponse} object. It implements {@link Runnable} to be used in
  * multi-threaded environment.
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
@@ -52,11 +56,10 @@ public class ConnectionHandler implements Runnable {
 	/**
 	 * The entry point for connection handler. It first parses incoming request
 	 * and creates a {@link HttpRequest} object, then it creates an appropriate
-	 * {@link AHttpResponse} object and sends the response back to the client
+	 * {@link IHttpResponse} object and sends the response back to the client
 	 * (web browser).
 	 */
 	public void run() {
-		// TODO: This class is a classic example of how not to code things.
 		// Refactor this code to make it
 		// cohesive and extensible
 		InputStream inStream = null;
@@ -65,11 +68,8 @@ public class ConnectionHandler implements Runnable {
 		try {
 			inStream = this.socket.getInputStream();
 			outStream = this.socket.getOutputStream();
-		} catch (Exception e) {
-			// Cannot do anything if we have exception reading input or output
-			// stream
-			// May be have text to log this for further analysis?
-			e.printStackTrace();
+		} catch (IOException e) {
+            ErrorLogger.getInstance().error(e);
 			return;
 		}
 
@@ -79,7 +79,7 @@ public class ConnectionHandler implements Runnable {
 		IHttpResponse response = null;
 		try {
 			request = HttpRequest.read(inStream);
-			System.out.println(request);
+			AccessLogger.getInstance().info(request);
 		} catch (ProtocolException pe) {
 			// We have some sort of protocol exception. Get its status code and
 			// create response
@@ -89,10 +89,11 @@ public class ConnectionHandler implements Runnable {
 			int status = pe.getStatus();
 			if (status == Protocol.BAD_REQUEST_CODE) {
 				response = GenericResponse.get400(Protocol.CLOSE);
-			}
-			// TODO: Handle version not supported code as well
-		} catch (Exception e) {
-			e.printStackTrace();
+			} else if (status == Protocol.NOT_SUPPORTED_CODE) {
+                response = GenericResponse.get400(Protocol.CLOSE);
+            }
+		} catch (ServerException e) {
+			ErrorLogger.getInstance().error(e);
 			// For any other error, we will create bad request response as well
 			response = GenericResponse.get400(Protocol.CLOSE);
 		}
@@ -104,46 +105,38 @@ public class ConnectionHandler implements Runnable {
 				
 				response.write(outStream);
 				// System.out.println(response);
-			} catch (Exception e) {
+			} catch (IOException e) {
 				// We will ignore this exception
-				e.printStackTrace();
+				ErrorLogger.getInstance().error(e);
 			}
 
 			return;
 		}
 
 		// We reached here means no error so far, so lets process further
-		try {
-			// Fill in the code to create a response for version mismatch.
-			// You may want to use constants such as Protocol.VERSION,
-			// Protocol.NOT_SUPPORTED_CODE, and more.
-			// You can check if the version matches as follows
-			if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
-				// Here you checked that the "Protocol.VERSION" string is not
-				// equal to the
-				// "request.version" string ignoring the case of the letters in
-				// both strings
-				response = GenericResponse.get400(Protocol.CLOSE);
-			} else {
-				IRequestHandler handler = handlers.get(request.getMethod().toUpperCase());
-				if(handler != null)
-					response = handler.handle(request);
-				else {
-					response = GenericResponse.get400(Protocol.CLOSE);
-				}
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+        // Fill in the code to create a response for version mismatch.
+        // You may want to use constants such as Protocol.VERSION,
+        // Protocol.NOT_SUPPORTED_CODE, and more.
+        // You can check if the version matches as follows
+        if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
+            response = GenericResponse.get400(Protocol.CLOSE);
+        } else {
+            IRequestHandler handler = handlers.get(request.getMethod().toUpperCase());
+            if(handler != null)
+                response = handler.handle(request);
+            else {
+                response = GenericResponse.get400(Protocol.CLOSE);
+            }
+        }
 
 		try {
 			// Write response and we are all done so close the socket
 			response.write(outStream);
 			// System.out.println(response);
 			socket.close();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			// We will ignore this exception
-			e.printStackTrace();
+			ErrorLogger.getInstance().error(e);
 		}
 	}
 }

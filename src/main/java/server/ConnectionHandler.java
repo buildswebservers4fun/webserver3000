@@ -1,26 +1,20 @@
 package server;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
-
+import dynamic.IServlet;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.ServerException;
-import protocol.handler.DeleteHandler;
-import protocol.handler.GetHandler;
-import protocol.handler.HeadHandler;
-import protocol.handler.IRequestHandler;
-import protocol.handler.PostHandler;
-import protocol.handler.PutHandler;
+import protocol.handler.DefaultHandler;
 import protocol.response.GenericResponse;
 import protocol.response.IHttpResponse;
 import utils.AccessLogger;
 import utils.ErrorLogger;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
 
 /**
  * This class is responsible for handling a incoming request by creating a
@@ -32,18 +26,12 @@ import utils.ErrorLogger;
  */
 public class ConnectionHandler implements Runnable {
 	private Socket socket;
-	private Map<String, IRequestHandler> handlers;
-	
+	private IServlet defaultServlet;
 	
 	public ConnectionHandler(String rootDirectory, Socket socket) {
 		this.socket = socket;
-		handlers = new HashMap<String, IRequestHandler>();
-		
-		handlers.put("DELETE", new DeleteHandler(rootDirectory));
-		handlers.put("GET", new GetHandler(rootDirectory));
-		handlers.put("HEAD", new HeadHandler(rootDirectory));
-		handlers.put("PUT", new PutHandler(rootDirectory));
-		handlers.put("POST", new PostHandler(rootDirectory));
+
+		defaultServlet = DefaultHandler.createDefaultHandler(rootDirectory);
 	}
 
 	/**
@@ -102,13 +90,11 @@ public class ConnectionHandler implements Runnable {
         if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
             response = GenericResponse.get400(Protocol.CLOSE);
         } else {
-            IRequestHandler handler = handlers.get(request.getMethod().toUpperCase());
-            if(handler != null)
-                response = handler.handle(request);
-            else {
-                response = GenericResponse.get400(Protocol.CLOSE);
-            }
+			response = defaultServlet.handle(request);
         }
+
+        if(response == null)
+			response = GenericResponse.get400(Protocol.CLOSE);
 
 		try {
 			response.write(outStream);

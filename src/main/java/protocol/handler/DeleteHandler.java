@@ -1,15 +1,15 @@
 package protocol.handler;
 
 import java.io.File;
-import java.io.IOException;
 
+import dynamic.handler.IDeleteHandler;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.response.DeleteResponse;
 import protocol.response.IHttpResponse;
 import utils.AccessLogger;
 
-public class DeleteHandler implements IRequestHandler {
+public class DeleteHandler implements IDeleteHandler {
 
 	private String rootDirectory;
 	
@@ -18,7 +18,7 @@ public class DeleteHandler implements IRequestHandler {
 	}
 	
 	@Override
-	public IHttpResponse handle(HttpRequest request) {
+	public IHttpResponse handleDelete(HttpRequest request) {
 		
 		String uri = request.getUri();
 		

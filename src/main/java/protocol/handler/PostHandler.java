@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import dynamic.handler.IPostHandler;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.response.GenericResponse;
 import protocol.response.IHttpResponse;
 import protocol.response.PostResponse;
 
-public class PostHandler implements IRequestHandler {
+public class PostHandler implements IPostHandler {
 	
 	private String rootDirectory;
 
@@ -19,7 +20,7 @@ public class PostHandler implements IRequestHandler {
 	}
 
 	@Override
-	public IHttpResponse handle(HttpRequest request) {
+	public IHttpResponse handlePost(HttpRequest request) {
 		String uri = request.getUri();
 		File file = new File(rootDirectory, uri);
 

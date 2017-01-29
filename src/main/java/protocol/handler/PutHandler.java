@@ -4,13 +4,14 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import dynamic.handler.IPutHandler;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.response.GenericResponse;
 import protocol.response.IHttpResponse;
 import protocol.response.PutResponse;
 
-public class PutHandler implements IRequestHandler {
+public class PutHandler implements IPutHandler {
 
 	private String rootDirectory;
 
@@ -19,7 +20,7 @@ public class PutHandler implements IRequestHandler {
 	}
 
 	@Override
-	public IHttpResponse handle(HttpRequest request) {
+	public IHttpResponse handlePut(HttpRequest request) {
 		String uri = request.getUri();
 		boolean exists = false;
 

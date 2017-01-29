@@ -2,12 +2,13 @@ package protocol.handler;
 
 import java.io.File;
 
+import dynamic.handler.IHeadHandler;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.response.HeadResponse;
 import protocol.response.IHttpResponse;
 
-public class HeadHandler implements IRequestHandler {
+public class HeadHandler implements IHeadHandler {
 
 	private String rootDirectory;
 	
@@ -16,7 +17,7 @@ public class HeadHandler implements IRequestHandler {
 	}
 	
 	@Override
-	public IHttpResponse handle(HttpRequest request) {
+	public IHttpResponse handleHead(HttpRequest request) {
 		IHttpResponse response;
 		// Map<String, String> header = request.getHeader();
 		// String date = header.get("if-modified-since");

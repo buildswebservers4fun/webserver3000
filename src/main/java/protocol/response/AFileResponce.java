@@ -23,18 +23,18 @@ public abstract class AFileResponce extends AHttpResponse {
 			long timeSinceEpoch = file.lastModified();
 			Date modifiedTime = new Date(timeSinceEpoch);
 			this.put(Protocol.LAST_MODIFIED, modifiedTime.toString());
-			
+
 			// Lets get content length in bytes
 			long length = file.length();
 			this.put(Protocol.CONTENT_LENGTH, length + "");
-			
+
 			// Lets get MIME type for the file
 			FileNameMap fileNameMap = URLConnection.getFileNameMap();
 			String mime = fileNameMap.getContentTypeFor(file.getName());
 			// The fileNameMap cannot find mime type for all of the documents, e.g. doc, odt, etc.
 			// So we will not add this field if we cannot figure out what a mime type is for the file.
 			// Let browser do this job by itself.
-			if(mime != null) { 
+			if(mime != null) {
 				this.put(Protocol.CONTENT_TYPE, mime);
 			}
 		}

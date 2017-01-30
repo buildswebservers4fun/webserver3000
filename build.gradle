@@ -190,7 +190,7 @@ task publishToTest(dependsOn: prod) << {
 			execute('rm -rf /tmp/webserver')
 			execute('/etc/init.d/testServer start > /dev/null')
 			sleep(1000)
-			execute('curl localhost:8080')
+			execute('sh /home/csse/test.sh')
 			println "All done!" 
 			println "webserver has been deployed to http://477-33.csse.rose-hulman.edu:8080"
 		}
@@ -226,7 +226,7 @@ task publishToProd(dependsOn: prod) << {
 			execute('rm -rf /tmp/webserver')
 			execute('/etc/init.d/testServer start > /dev/null')
 			sleep(1000)
-			execute('curl localhost:8080')
+			execute('sh /home/csse/test.sh')
 			println "All done!"
 			println "Rosecalcultor has been deployed to http://477-38.csse.rose-hulman.edu:8080"
 		}

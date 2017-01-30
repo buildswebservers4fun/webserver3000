@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.FileNameMap;
@@ -16,22 +15,13 @@ import java.util.Map;
 import protocol.Protocol;
 
 public class HttpResponseBuilder {
-	private String version;
+	private String version = Protocol.VERSION;
 	private int status;
 	private String phrase;
 	private Map<String, String> headers;
 	private File file;
 	private String connection;
 	private boolean doWriteFile = false;
-	
-	// add headers
-	
-	
-	// add http body OR add file body
-	
-	public void setVersion(String version) {
-		this.version = version;
-	}
 	
 	public void setStatus(int status) {
 		this.status = status;
@@ -48,10 +38,6 @@ public class HttpResponseBuilder {
 	public void setConnection(String connection) {
 		this.connection = connection;
 	}
-	
-//	public void addHeader(String header, String field) {
-//		this.headers.put(header, field);
-//	}
 	
 	public void setFileBody(File file) {
 		this.doWriteFile = true;
@@ -79,6 +65,10 @@ public class HttpResponseBuilder {
 		}
 	}
 	
+	public void setFileName(File file) {
+		this.doWriteFile = false;
+		this.file = file;
+	}
 	
 	public IHttpResponse build() {
 		headers.put(Protocol.CONNECTION, connection);
@@ -127,7 +117,7 @@ public class HttpResponseBuilder {
 			
 			private void writeBody(OutputStream out) throws IOException {
 				// We are reading a file
-				if(doWriteFile && status == Protocol.OK_CODE && file != null) {
+				if(doWriteFile && (status == Protocol.OK_CODE || status == Protocol.CREATED_CODE) && file != null) {
 					writeFile(out);
 				}
 			}

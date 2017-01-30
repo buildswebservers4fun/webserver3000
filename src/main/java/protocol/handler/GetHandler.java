@@ -1,11 +1,12 @@
 package protocol.handler;
 
 import java.io.File;
+import java.util.HashMap;
 
 import dynamic.handler.IGetHandler;
 import protocol.HttpRequest;
 import protocol.Protocol;
-import protocol.response.GetResponse;
+import protocol.response.HttpResponseBuilder;
 import protocol.response.IHttpResponse;
 
 public class GetHandler implements IGetHandler {
@@ -37,21 +38,40 @@ public class GetHandler implements IGetHandler {
 				file = new File(location);
 				if (file.exists()) {
 					// Lets create 200 OK response
-					response = GetResponse.get200(file, Protocol.CLOSE);
+					response = build200Response(file);
 				} else {
 					// File does not exist so lets create 404 file not found
 					// code
-					response = GetResponse.get404(Protocol.CLOSE);
+					response = build404Response();
 				}
 			} else { // Its a file
 						// Lets create 200 OK response
-				response = GetResponse.get200(file, Protocol.CLOSE);
+				response = build200Response(file);
 			}
 		} else {
 			// File does not exist so lets create 404 file not found code
-			response = GetResponse.get404(Protocol.CLOSE);
+			response = build404Response();
 		}
 		return response;
+	}
+	
+	private IHttpResponse build200Response(File file) {
+		HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+		responseBuilder.setStatus(Protocol.OK_CODE);
+		responseBuilder.setPhrase(Protocol.OK_TEXT);
+		responseBuilder.setHeaders(new HashMap<String, String>());
+		responseBuilder.setFileBody(file);
+		responseBuilder.setConnection(Protocol.CLOSE);
+		return responseBuilder.build();
+	}
+	
+	private IHttpResponse build404Response() {
+		HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+		responseBuilder.setStatus(Protocol.NOT_FOUND_CODE);
+		responseBuilder.setPhrase(Protocol.NOT_FOUND_TEXT);
+		responseBuilder.setHeaders(new HashMap<String, String>());
+		responseBuilder.setConnection(Protocol.CLOSE);
+		return responseBuilder.build();
 	}
 
 }

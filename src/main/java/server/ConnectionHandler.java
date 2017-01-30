@@ -6,7 +6,7 @@ import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.ServerException;
 import protocol.handler.DefaultHandler;
-import protocol.response.GenericResponse;
+import protocol.response.HttpResponseBuilder;
 import protocol.response.IHttpResponse;
 import utils.AccessLogger;
 import utils.ErrorLogger;
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.HashMap;
 
 /**
  * This class is responsible for handling a incoming request by creating a
@@ -62,13 +63,13 @@ public class ConnectionHandler implements Runnable {
 		} catch (ProtocolException pe) {
 			int status = pe.getStatus();
 			if (status == Protocol.BAD_REQUEST_CODE) {
-				response = GenericResponse.get400(Protocol.CLOSE);
+				response = build400Response();
 			} else if (status == Protocol.NOT_SUPPORTED_CODE) {
-                response = GenericResponse.get400(Protocol.CLOSE);
+                response = build400Response();
             }
 		} catch (ServerException e) {
 			ErrorLogger.getInstance().error(e);
-			response = GenericResponse.get400(Protocol.CLOSE);
+			response = build400Response();
 		}
 
         // Means there was an error, now write the response object to the
@@ -88,13 +89,13 @@ public class ConnectionHandler implements Runnable {
         // Protocol.NOT_SUPPORTED_CODE, and more.
         // You can check if the version matches as follows
         if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
-            response = GenericResponse.get400(Protocol.CLOSE);
+            response = build400Response();
         } else {
 			response = defaultServlet.handle(request);
         }
 
         if(response == null)
-			response = GenericResponse.get400(Protocol.CLOSE);
+			response = build400Response();
 
 		try {
 			response.write(outStream);
@@ -103,5 +104,15 @@ public class ConnectionHandler implements Runnable {
 			// We will ignore this exception
 			ErrorLogger.getInstance().error(e);
 		}
+	}
+	
+	private IHttpResponse build400Response() {
+		HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+		responseBuilder.setStatus(Protocol.BAD_REQUEST_CODE);
+		responseBuilder.setPhrase(Protocol.BAD_REQUEST_TEXT);
+		responseBuilder.setHeaders(new HashMap<String, String>());
+		responseBuilder.setConnection(Protocol.CLOSE);
+		
+		return responseBuilder.build();
 	}
 }

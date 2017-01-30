@@ -12,9 +12,9 @@ import java.util.Map;
 
 import protocol.Protocol;
 
-public abstract class AFileResponce extends AHttpResponse {
+public abstract class AFileResponse extends AHttpResponse {
 
-	public AFileResponce(String version, int status, String phrase, Map<String, String> header, File file,
+	public AFileResponse(String version, int status, String phrase, Map<String, String> header, File file,
 			String connection) {
 		super(version, status, phrase, header, file, connection);
 

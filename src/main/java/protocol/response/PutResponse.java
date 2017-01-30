@@ -8,7 +8,7 @@ import java.util.Map;
 
 import protocol.Protocol;
 
-public class PutResponse extends AFileResponce {
+public class PutResponse extends AFileResponse {
 
 	public static AHttpResponse get200(File file, String connection) {
 		AHttpResponse response = new PutResponse(Protocol.VERSION, Protocol.OK_CODE, 

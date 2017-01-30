@@ -8,7 +8,7 @@ import java.util.Map;
 
 import protocol.Protocol;
 
-public class DeleteResponse extends AFileResponce {
+public class DeleteResponse extends AFileResponse {
 
 	public DeleteResponse(String version, int status, String phrase, Map<String, String> header, File file,
 			String connection) {

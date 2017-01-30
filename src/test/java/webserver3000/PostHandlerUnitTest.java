@@ -110,7 +110,6 @@ public class PostHandlerUnitTest {
 		body.set(request, "this is a post body".toCharArray());
 		
 		assertEquals(true, file.exists());
-		System.out.println(file.getPath());
 		
 		FileWriter fw = new FileWriter(file);
 		fw.write("initial stuff");

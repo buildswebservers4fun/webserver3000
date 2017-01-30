@@ -23,7 +23,7 @@ public class ServerTest {
 		String rootDirectory = "testRoot";
 		int port = 47097;
 		Server server = new Server(rootDirectory, 47097);
-		
+
 		assertEquals(rootDirectory, server.getRootDirectory());
 		assertEquals(port, server.getPort());
 	}

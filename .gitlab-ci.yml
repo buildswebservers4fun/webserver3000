@@ -16,6 +16,7 @@ deploy:
   stage: deploy
   script:
     - gradle publishToProd
+    - gradle publish
   tags:
     - linux
     - java

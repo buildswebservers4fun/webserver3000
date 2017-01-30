@@ -8,7 +8,6 @@ build:
     - gradle build --info
     - gradle publishToTest
   tags:
-    - linux
     - java
     - gradle
 
@@ -18,7 +17,6 @@ deploy:
     - gradle publishToProd
     - gradle publish
   tags:
-    - linux
     - java
     - gradle
   only:

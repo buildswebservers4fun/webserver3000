@@ -91,7 +91,7 @@ public class PutHandlerUnitTest {
 		
 		assertEquals(true, newFile.exists());
 		assertEquals(201,response.getStatus());
-		String fileName = ".\\test\\newFile.txt";
+		String fileName = "./test/newFile.txt";
 		String content = new String(Files.readAllBytes(Paths.get(fileName)));
 		
 		assertEquals("new body", content);
@@ -108,7 +108,7 @@ public class PutHandlerUnitTest {
 		fw.write("overwrite me!");
 		fw.close();
 		
-		String fileName = ".\\test\\test.txt";
+		String fileName = "./test/test.txt";
 		String content = new String(Files.readAllBytes(Paths.get(fileName)));
 		assertEquals("overwrite me!", content);
 		

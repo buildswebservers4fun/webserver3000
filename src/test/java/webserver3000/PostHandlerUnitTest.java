@@ -115,7 +115,7 @@ public class PostHandlerUnitTest {
 		fw.write("initial stuff");
 		fw.close();
 		
-		String fileName = ".\\test\\test.txt";
+		String fileName = "./test/test.txt";
 		
 		String content = new String(Files.readAllBytes(Paths.get(fileName)));
 		
@@ -140,7 +140,7 @@ public class PostHandlerUnitTest {
 		newFile.delete();
 		assertEquals(false, newFile.exists());
 		
-		String fileName = ".\\test\\newFile.txt";
+		String fileName = "./test/newFile.txt";
 		
 		response = (PostResponse) handler.handlePost(request);
 		

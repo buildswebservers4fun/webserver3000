@@ -25,12 +25,21 @@ deploy_prod:
   stage: deploy
   script:
     - gradle publishToProd
-    - gradle publish
   tags:
     - java
     - gradle
   environment:
     name: Prod
     url: http://477-38.csse.rose-hulman.edu:8080
+  only:
+    - tags
+    
+deploy_maven:
+  stage: deploy
+  script:
+    - gradle publish
+  tags:
+    - java
+    - gradle
   only:
     - tags

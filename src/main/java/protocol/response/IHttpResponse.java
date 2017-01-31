@@ -7,4 +7,5 @@ import java.io.OutputStream;
 
 public interface IHttpResponse {
 	void write(OutputStream outStream) throws IOException;
+	int getStatus();
 }

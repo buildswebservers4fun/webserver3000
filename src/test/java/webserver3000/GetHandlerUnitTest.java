@@ -1,27 +1,24 @@
 package webserver3000;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import protocol.HttpRequest;
+import protocol.handler.GetHandler;
+import protocol.response.IHttpResponse;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import protocol.HttpRequest;
-import protocol.handler.GetHandler;
-import protocol.response.GetResponse;
-import protocol.response.IHttpResponse;
-import server.Server;
+import static org.junit.Assert.assertEquals;
 
 public class GetHandlerUnitTest {
 
 	private String rootDirectory = "./test";
 	private HttpRequest request;
-	private GetResponse response;
+	private IHttpResponse response;
 	private GetHandler handler;
 	private Field uri;
 	private File file;
@@ -63,7 +60,7 @@ public class GetHandlerUnitTest {
 		newDir.mkdir();
 
 		uri.set(request, "test/");
-		response = (GetResponse) handler.handleGet(request);
+		response = handler.handleGet(request);
 
 		assertEquals(404, response.getStatus());
 
@@ -83,7 +80,7 @@ public class GetHandlerUnitTest {
 		index.createNewFile();
 
 		uri.set(request, "/test");
-		response = (GetResponse) handler.handleGet(request);
+		response = handler.handleGet(request);
 
 		assertEquals(200, response.getStatus());
 
@@ -95,7 +92,7 @@ public class GetHandlerUnitTest {
 	public void testHandleGetFile() throws InterruptedException, IllegalArgumentException, IllegalAccessException,
 			NoSuchFieldException, SecurityException {
 		uri.set(request, "test.txt");
-		response = (GetResponse) handler.handleGet(request);
+		response = handler.handleGet(request);
 		assertEquals("test.txt", uri.get(request));
 
 		assertEquals(200, response.getStatus());
@@ -104,7 +101,7 @@ public class GetHandlerUnitTest {
 	@Test
 	public void testHandleGet404() throws InterruptedException, IllegalArgumentException, IllegalAccessException {
 		uri.set(request, "nonexistent.txt");
-		response = (GetResponse) handler.handleGet(request);
+		response = handler.handleGet(request);
 		assertEquals(404, response.getStatus());
 
 	}

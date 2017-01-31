@@ -114,7 +114,12 @@ public class HttpResponseBuilder {
 				// Flush the data so that outStream sends everything through the socket 
 				out.flush();
 			}
-			
+
+			@Override
+			public int getStatus() {
+				return status;
+			}
+
 			private void writeBody(OutputStream out) throws IOException {
 				// We are reading a file
 				if(doWriteFile && (status == Protocol.OK_CODE || status == Protocol.CREATED_CODE) && file != null) {

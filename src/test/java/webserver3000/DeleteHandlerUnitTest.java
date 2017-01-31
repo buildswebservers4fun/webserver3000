@@ -1,26 +1,23 @@
 package webserver3000;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import protocol.HttpRequest;
+import protocol.handler.DeleteHandler;
+import protocol.response.IHttpResponse;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import protocol.HttpRequest;
-import protocol.handler.DeleteHandler;
-import protocol.handler.GetHandler;
-import protocol.response.DeleteResponse;
-import protocol.response.GetResponse;
+import static org.junit.Assert.assertEquals;
 
 public class DeleteHandlerUnitTest {
 
 	private String rootDirectory = "./test";
 	private HttpRequest request;
-	private DeleteResponse response;
+	private IHttpResponse response;
 	private DeleteHandler handler;
 	private Field uri;
 	private File file;
@@ -60,7 +57,7 @@ public class DeleteHandlerUnitTest {
 		uri.set(request, "/test.txt");
 
 		assertEquals(true, file.exists());
-		response = (DeleteResponse) handler.handleDelete(request);
+		response = handler.handleDelete(request);
 		assertEquals(200, response.getStatus());
 		assertEquals(false, file.exists());
 
@@ -75,7 +72,7 @@ public class DeleteHandlerUnitTest {
 		assertEquals(true, testDir.isDirectory());
 
 		uri.set(request, "/testDir");
-		response = (DeleteResponse) handler.handleDelete(request);
+		response = handler.handleDelete(request);
 
 		assertEquals(200, response.getStatus());
 		assertEquals(false, testDir.exists());
@@ -86,7 +83,7 @@ public class DeleteHandlerUnitTest {
 	public void testDeletingNonExistentFileReturns404() throws IllegalArgumentException, IllegalAccessException {
 		uri.set(request, "/nonexistent.txt");
 		assertEquals(false, new File(root, "nonexistent.txt").exists());
-		response = (DeleteResponse) handler.handleDelete(request);
+		response = handler.handleDelete(request);
 		assertEquals(404, response.getStatus());
 	}
 

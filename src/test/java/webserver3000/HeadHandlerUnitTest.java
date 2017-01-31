@@ -1,27 +1,24 @@
 package webserver3000;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import protocol.HttpRequest;
+import protocol.handler.HeadHandler;
+import protocol.response.IHttpResponse;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-import protocol.HttpRequest;
-import protocol.handler.GetHandler;
-import protocol.handler.HeadHandler;
-import protocol.response.GetResponse;
-import protocol.response.HeadResponse;
+import static org.junit.Assert.assertEquals;
 
 public class HeadHandlerUnitTest {
 
 	private String rootDirectory = "./test";
 	private HttpRequest request;
-	private HeadResponse response;
+	private IHttpResponse response;
 	private HeadHandler handler;
 	private Field uri;
 	private File file;
@@ -59,7 +56,7 @@ public class HeadHandlerUnitTest {
 	@Test
 	public void headRequestGives200OnExistingFile() throws IllegalArgumentException, IllegalAccessException {
 		uri.set(request, "/test.txt");
-		response = (HeadResponse) handler.handleHead(request);
+		response = handler.handleHead(request);
 		assertEquals(200, response.getStatus());
 	}
 
@@ -69,7 +66,7 @@ public class HeadHandlerUnitTest {
 		File defaultFile = new File(root, "index.html");
 		defaultFile.createNewFile();
 		uri.set(request, "/");
-		response = (HeadResponse) handler.handleHead(request);
+		response = handler.handleHead(request);
 		assertEquals(200, response.getStatus());
 		defaultFile.delete();
 
@@ -78,7 +75,7 @@ public class HeadHandlerUnitTest {
 	@Test
 	public void headRequestGives404OnDirIfNoIndex() throws IllegalArgumentException, IllegalAccessException {
 		uri.set(request, "/");
-		response = (HeadResponse) handler.handleHead(request);
+		response = handler.handleHead(request);
 		assertEquals(404, response.getStatus());
 	}
 
@@ -86,7 +83,7 @@ public class HeadHandlerUnitTest {
 	public void headRequestGives404OnFileNotFound() throws IllegalArgumentException, IllegalAccessException {
 		uri.set(request, "doesntExist.txt");
 
-		response = (HeadResponse) handler.handleHead(request);
+		response = handler.handleHead(request);
 		assertEquals(404, response.getStatus());
 	}
 

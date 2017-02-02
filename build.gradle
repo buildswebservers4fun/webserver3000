@@ -174,18 +174,12 @@ task publishToTest(dependsOn: prod) << {
 			println "Transfering file from local build/distributions to remote /tmp/webserver ..."
 			put from: "${buildDir}/libs/WebServer-*.jar", into: '/tmp/webserver'
 			println "Files transfer complete now setting up the web server ..."
-			
-			println "Checking if remote /home/csse/webserver exists ..."
-			result = execute('if test -d /home/csse/webserver; then echo "exists"; fi')
-			if(result != "exists") {
-				println("Remote /home/csse/webserver does not exist, creating a new one...")
-				execute('mkdir -p /home/csse/webserver', pty: true)
-				println("Remote /home/csse/webserver created!")
-			}
-			println "Copying data from the temp folder to the web folder ..."
 			execute('/etc/init.d/testServer stop &')
 			sleep(1000)
-			execute('cp /tmp/webserver/* /home/csse/webserver', pty: true)
+			execute('rm -rf /home/csse/webserver/jar', pty: true)
+			execute('mkdir -p /home/csse/webserver/jar', pty: true)
+			println "Copying data from the temp folder to the web folder ..."
+			execute('cp /tmp/webserver/* /home/csse/webserver/jar', pty: true)
 			println "Done! Clearing the tmp folder ..."
 			execute('rm -rf /tmp/webserver')
 			execute('/etc/init.d/testServer start > /dev/null')

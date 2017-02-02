@@ -67,7 +67,6 @@ public class DirectoryWatcher {
 	 */
 	private void register(Path dir) throws IOException, ClassNotFoundException {
 		WatchKey key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-		System.out.println("Hi. " + trace);
 		if (trace) {
 			Path prev = keys.get(key);
 			if (prev == null) {
@@ -76,46 +75,7 @@ public class DirectoryWatcher {
 				if (!dir.equals(prev)) {
 					System.out.format("update: %s -> %s\n", prev, dir);
 				}
-			}
-			JarFile jf = new JarFile(prev.toString());
-			
-				URL[] urls = { new URL("jar:file:" + prev.toString() + "!/") };
-				URLClassLoader cl = URLClassLoader.newInstance(urls);
-				
-				Enumeration<JarEntry> entries = jf.entries();
-				while (entries.hasMoreElements()) {
-					JarEntry element = entries.nextElement();
-					String name = element.getName();
-					 System.out.println(name);
-					if (name.endsWith(".MF")) {
-						// Manifest
-						Manifest manifest = jf.getManifest();
-						Attributes attr = manifest.getMainAttributes();
-						Set<Object> keys = attr.keySet();
-						for (Object o : keys) {
-							System.out.println("Key: " + o + " -- Value: " + attr.get(o));
-						}
-					}
-					if (name.endsWith(CLASS_SUFFIX)) {
-						name = element.getName().substring(0, element.getName().length() - 6);
-						name = name.replace('/', '.');
-						try {
-							Class c = cl.loadClass(name);
-							System.out.println("Class object: " + c);
-							
-							Method[] methods = c.getMethods();
-							for (Method m : methods) {
-								System.out.println(" - " + m.getName());
-							}
-						} catch (NoClassDefFoundError e) {
-							System.out.println(e.getMessage());
-						}
-						
-					}
-				}
-				
-				jf.close();
-				
+			}	
 		}
 		keys.put(key, dir);
 	}
@@ -143,7 +103,7 @@ public class DirectoryWatcher {
 	 * Creates a WatchService and registers the given directory
 	 * @throws ClassNotFoundException 
 	 */
-	public DirectoryWatcher(Path dir, boolean recursive) throws IOException, ClassNotFoundException {
+	public DirectoryWatcher(Path dir, boolean recursive) throws IOException, ClassNotFoundException{
 		this.watcher = FileSystems.getDefault().newWatchService();
 		this.keys = new HashMap<WatchKey, Path>();
 		this.recursive = recursive;
@@ -162,8 +122,10 @@ public class DirectoryWatcher {
 
 	/**
 	 * Process all events for keys queued to the watcher
+	 * @throws ClassNotFoundException 
+	 * @throws IOException 
 	 */
-	public void processEvents() {
+	public void processEvents() throws ClassNotFoundException, IOException {
 		for (;;) {
 
 			// wait for key to be signalled
@@ -192,10 +154,53 @@ public class DirectoryWatcher {
 				WatchEvent<Path> ev = cast(event);
 				Path name = ev.context();
 				Path child = dir.resolve(name);
+				String pathname = child.toString();
 
 				// print out event
-				System.out.println("Hello. I have been something'd.");
+				System.out.println(pathname);
 				System.out.format("%s: %s\n", event.kind().name(), child);
+				
+				if (pathname.endsWith(".jar") && event.kind().name() != "ENTRY_DELETE") {
+					System.out.println("In jar class loading stuff");
+					JarFile jf = new JarFile(pathname);
+					
+					URL[] urls = { new URL("jar:file:" + pathname + "!/") };
+					URLClassLoader cl = URLClassLoader.newInstance(urls);
+					
+					Enumeration<JarEntry> entries = jf.entries();
+					while (entries.hasMoreElements()) {
+						JarEntry element = entries.nextElement();
+						String filename = element.getName();
+						System.out.println(filename);
+						if (filename.endsWith(".MF")) {
+							// Manifest
+							Manifest manifest = jf.getManifest();
+							Attributes attr = manifest.getMainAttributes();
+							Set<Object> keys = attr.keySet();
+							for (Object o : keys) {
+								System.out.println("Key: " + o + " -- Value: " + attr.get(o));
+							}
+						}
+						if (filename.endsWith(CLASS_SUFFIX)) {
+							filename = element.getName().substring(0, element.getName().length() - 6);
+							filename = filename.replace('/', '.');
+							try {
+								Class c = cl.loadClass(filename);
+								System.out.println("Class object: " + c);
+								
+								Method[] methods = c.getMethods();
+								for (Method m : methods) {
+									System.out.println(" - " + m.getName());
+								}
+							} catch (NoClassDefFoundError e) {
+								System.out.println(e.getMessage());
+							}
+							
+						}
+					}
+					
+					jf.close();
+				}
 
 				// if directory is created, and watching recursively, then
 				// register it and its sub-directories

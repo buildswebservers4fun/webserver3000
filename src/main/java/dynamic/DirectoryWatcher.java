@@ -121,7 +121,10 @@ public class DirectoryWatcher {
 	 * Creates a WatchService and registers the given directory
 	 * @throws ClassNotFoundException 
 	 */
-	public DirectoryWatcher(Path dir, boolean recursive) throws IOException, ClassNotFoundException{
+	public DirectoryWatcher(Path dir, boolean recursive) throws IOException, ClassNotFoundException {
+		if(!dir.toFile().exists()) {
+			dir.toFile().mkdir();
+		}
 		this.watcher = FileSystems.getDefault().newWatchService();
 		this.keys = new HashMap<WatchKey, Path>();
 		this.recursive = recursive;

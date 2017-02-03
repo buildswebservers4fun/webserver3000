@@ -32,9 +32,11 @@ package dynamic;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.*;
+import java.time.chrono.IsoChronology;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,6 +56,7 @@ public class DirectoryWatcher {
 
     private final WatchService watcher;
     private final Map<WatchKey, Path> keys;
+    private final Path basePath;
     private boolean trace = false;
     private static final String CLASS_SUFFIX = ".class";
 
@@ -94,11 +97,11 @@ public class DirectoryWatcher {
             filePath.mkdir();
         }
 
-        Path path = filePath.toPath();
+        basePath = filePath.toPath();
 
         this.watcher = FileSystems.getDefault().newWatchService();
         this.keys = new HashMap<WatchKey, Path>();
-        register(path);
+        register(basePath);
 
         // enable trace after initial registration
         this.trace = true;
@@ -132,7 +135,7 @@ public class DirectoryWatcher {
 
                 // Context for directory entry event is the file name of entry
                 WatchEvent<Path> ev = cast(event);
-                Path path = ev.context().toAbsolutePath();
+                Path path = basePath.resolve(ev.context()).toAbsolutePath();
                 // print out event
                 System.out.format("%s: %s\n", event.kind().name(), path);
                 if (path.toFile().getName().endsWith(".jar") && kind == ENTRY_CREATE)
@@ -160,33 +163,42 @@ public class DirectoryWatcher {
             URL[] urls = {new URL("jar:file:" + jar.toAbsolutePath() + "!/")};
             URLClassLoader cl = URLClassLoader.newInstance(urls);
 
-            Enumeration<JarEntry> entries = jf.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry element = entries.nextElement();
-                String filename = element.getName();
-//							System.out.println(filename);
-                if (filename.endsWith(".MF")) {
-                    // Manifest
-                    Manifest manifest = jf.getManifest();
-                    Attributes attr = manifest.getMainAttributes();
-                    Set<Object> keys = attr.keySet();
-                    for (Object o : keys) {
-                        System.out.println("Key: " + o + " -- Value: " + attr.get(o));
-                    }
-                }
-                if (filename.endsWith(CLASS_SUFFIX)) {
-                    filename = element.getName().substring(0, element.getName().length() - 6);
-                    filename = filename.replace('/', '.');
-                    try {
-                        Class c = cl.loadClass(filename);
-//									System.out.println("Class object: " + c);
-                    } catch (NoClassDefFoundError e) {
-                        System.out.println(e.getMessage());
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+//            Enumeration<JarEntry> entries = jf.entries();
+//            while (entries.hasMoreElements()) {
+//                JarEntry element = entries.nextElement();
+//                String filename = element.getName();
+////							System.out.println(filename);
+//                if (filename.endsWith(".MF")) {
+//                    // Manifest
+//                    Manifest manifest = jf.getManifest();
+//                    Attributes attr = manifest.getMainAttributes();
+//                    Set<Object> keys = attr.keySet();
+//                    for (Object o : keys) {
+//                        System.out.println("Key: " + o + " -- Value: " + attr.get(o));
+//                    }
+//                }
+//                if (filename.endsWith(CLASS_SUFFIX)) {
+//                    filename = element.getName().substring(0, element.getName().length() - 6);
+//                    filename = filename.replace('/', '.');
+//                    try {
+//                        Class c = cl.loadClass(filename);
+////									System.out.println("Class object: " + c);
+//                    } catch (NoClassDefFoundError e) {
+//                        System.out.println(e.getMessage());
+//                    } catch (ClassNotFoundException e) {
+//                        e.printStackTrace();
+//                    }
+//                }
+//            }
+            String mainClass = jf.getManifest().getMainAttributes().getValue("Main-Class");
+            String contextRoot = jf.getManifest().getMainAttributes().getValue("contextRoot");
+
+            System.out.println(mainClass);
+            System.out.println(contextRoot);
+            // TODO: Use the following Methods to init servlet
+//            Class<? extends IServlet> mainClazz = (Class<? extends IServlet>) cl.loadClass(mainClass);
+//            IServlet servlet = mainClazz.getConstructor(String.class).newInstance("ROOTDIRECTORY");
+
             jf.close();
             cl.close();
         } catch (IOException e) {

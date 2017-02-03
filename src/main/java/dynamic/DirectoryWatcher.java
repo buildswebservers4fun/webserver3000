@@ -30,15 +30,33 @@ package dynamic;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import java.nio.file.*;
-import static java.nio.file.StandardWatchEventKinds.*;
-import static java.nio.file.LinkOption.*;
-import java.nio.file.attribute.*;
-import java.io.*;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_DELETE;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
+import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -124,11 +142,12 @@ public class DirectoryWatcher {
 	 * Process all events for keys queued to the watcher
 	 * @throws ClassNotFoundException 
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
-	public void processEvents() throws ClassNotFoundException, IOException {
+	public void processEvents() throws ClassNotFoundException, IOException, InterruptedException {
 		for (;;) {
 
-			// wait for key to be signalled
+			// wait for key to be signaled
 			WatchKey key;
 			try {
 				key = watcher.take();
@@ -160,48 +179,56 @@ public class DirectoryWatcher {
 				System.out.println(pathname);
 				System.out.format("%s: %s\n", event.kind().name(), child);
 				
-				if (pathname.endsWith(".jar") && event.kind().name() != "ENTRY_DELETE") {
-					System.out.println("In jar class loading stuff");
-					JarFile jf = new JarFile(pathname);
-					
-					URL[] urls = { new URL("jar:file:" + pathname + "!/") };
-					URLClassLoader cl = URLClassLoader.newInstance(urls);
-					
-					Enumeration<JarEntry> entries = jf.entries();
-					while (entries.hasMoreElements()) {
-						JarEntry element = entries.nextElement();
-						String filename = element.getName();
-						System.out.println(filename);
-						if (filename.endsWith(".MF")) {
-							// Manifest
-							Manifest manifest = jf.getManifest();
-							Attributes attr = manifest.getMainAttributes();
-							Set<Object> keys = attr.keySet();
-							for (Object o : keys) {
-								System.out.println("Key: " + o + " -- Value: " + attr.get(o));
-							}
-						}
-						if (filename.endsWith(CLASS_SUFFIX)) {
-							filename = element.getName().substring(0, element.getName().length() - 6);
-							filename = filename.replace('/', '.');
-							try {
-								Class c = cl.loadClass(filename);
-								System.out.println("Class object: " + c);
-								
-								Method[] methods = c.getMethods();
-								for (Method m : methods) {
-									System.out.println(" - " + m.getName());
+				if (pathname.endsWith(".jar") && event.kind().name() == "ENTRY_CREATE") {
+					String jarPath = dir.toAbsolutePath() + "\\" + name.toString().substring(0, name.toString().length() - 4);
+					jarPath = jarPath.replace(".\\", "");
+					File jarDir = new File(jarPath);
+					System.out.println("jarDir.getAbsolutePath(): " + jarDir.getAbsolutePath());
+					boolean success = jarDir.mkdir();
+					if (success) {
+						Path start = Paths.get(dir.toAbsolutePath().toString().replace(".\\", "") + "\\" + name.toString());
+						Path dest = Paths.get(jarDir.toPath() + "\\" + name.toString());
+						System.out.println(start + " to " + dest);
+						Files.copy(start, dest, REPLACE_EXISTING);
+						
+						System.out.println("In jar class loading stuff");
+						JarFile jf = new JarFile(dest.toString());
+						
+						URL[] urls = { new URL("jar:file:" + dest.toString() + "!/") };
+						URLClassLoader cl = URLClassLoader.newInstance(urls);
+						
+						Enumeration<JarEntry> entries = jf.entries();
+						while (entries.hasMoreElements()) {
+							JarEntry element = entries.nextElement();
+							String filename = element.getName();
+//							System.out.println(filename);
+							if (filename.endsWith(".MF")) {
+								// Manifest
+								Manifest manifest = jf.getManifest();
+								Attributes attr = manifest.getMainAttributes();
+								Set<Object> keys = attr.keySet();
+								for (Object o : keys) {
+//									System.out.println("Key: " + o + " -- Value: " + attr.get(o));
 								}
-							} catch (NoClassDefFoundError e) {
-								System.out.println(e.getMessage());
 							}
-							
+							if (filename.endsWith(CLASS_SUFFIX)) {
+								filename = element.getName().substring(0, element.getName().length() - 6);
+								filename = filename.replace('/', '.');
+								try {
+									Class c = cl.loadClass(filename);
+//									System.out.println("Class object: " + c);
+								} catch (NoClassDefFoundError e) {
+									System.out.println(e.getMessage());
+								}
+							}
 						}
+						jf.close();
+						cl.close();
+						
+					} else {
+						System.out.println("Could not create a directory.");
 					}
-					
-					jf.close();
 				}
-
 				// if directory is created, and watching recursively, then
 				// register it and its sub-directories
 				if (recursive && (kind == ENTRY_CREATE)) {
@@ -228,8 +255,4 @@ public class DirectoryWatcher {
 		}
 	}
 
-	static void usage() {
-		System.err.println("usage: java WatchDir [-r] dir");
-		System.exit(-1);
-	}
 }

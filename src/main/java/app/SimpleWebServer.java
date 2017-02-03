@@ -2,7 +2,10 @@ package app;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
+import dynamic.DirectoryWatcher;
 import server.Server;
 
 /**
@@ -11,13 +14,17 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class SimpleWebServer {
-	public static void main(String[] args) throws InterruptedException, IOException {
+	public static void main(String[] args) throws InterruptedException, IOException, ClassNotFoundException {
 		// DONE: Server configuration, ideally we want to read these from an application.properties file
 		File properties = new File("./application.properties");
 		ApplicationSettings settings = new ApplicationSettings(properties);
 		
 		String rootDirectory = settings.getRootDirectory();
 		int port = settings.getPort();
+		Path dir = settings.getPluginsDirectory();
+		
+		// Create Watch Service
+        new DirectoryWatcher(dir, false).processEvents();
 		
 		// Create a run the server
 		Server server = new Server(rootDirectory, port);

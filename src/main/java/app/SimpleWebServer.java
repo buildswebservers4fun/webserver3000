@@ -21,6 +21,10 @@ public class SimpleWebServer {
 		
 		String rootDirectory = settings.getRootDirectory();
 		int port = settings.getPort();
+		Path dir = settings.getPluginsDirectory();
+		
+		// Create Watch Service
+        new DirectoryWatcher(dir, false).processEvents();
 		
 		// Create Watch Service
 		Path dir = Paths.get("./plugins");

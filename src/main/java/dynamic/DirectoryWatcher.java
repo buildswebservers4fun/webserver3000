@@ -164,7 +164,6 @@ public class DirectoryWatcher {
 			for (WatchEvent<?> event : key.pollEvents()) {
 				WatchEvent.Kind kind = event.kind();
 
-				// TBD - provide example of how OVERFLOW event is handled
 				if (kind == OVERFLOW) {
 					continue;
 				}
@@ -189,7 +188,7 @@ public class DirectoryWatcher {
 						Path start = Paths.get(dir.toAbsolutePath().toString().replace(".\\", "") + "\\" + name.toString());
 						Path dest = Paths.get(jarDir.toPath() + "\\" + name.toString());
 						System.out.println(start + " to " + dest);
-						Files.copy(start, dest, REPLACE_EXISTING);
+						Files.move(start, dest, REPLACE_EXISTING);
 						
 						System.out.println("In jar class loading stuff");
 						JarFile jf = new JarFile(dest.toString());

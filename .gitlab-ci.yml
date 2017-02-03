@@ -6,18 +6,39 @@ build:
   stage: build
   script:
     - gradle build --info
-    - gradle publishToTest
   tags:
-    - linux
     - java
     - gradle
 
-deploy:
+deploy_test:
+  stage: deploy
+  script:
+    - gradle publishToTest
+  environment:
+    name: Test
+    url: http://477-33.csse.rose-hulman.edu:8080
+  tags:
+    - java
+    - gradle
+
+deploy_prod:
   stage: deploy
   script:
     - gradle publishToProd
   tags:
-    - linux
+    - java
+    - gradle
+  environment:
+    name: Prod
+    url: http://477-38.csse.rose-hulman.edu:8080
+  only:
+    - tags
+    
+deploy_maven:
+  stage: deploy
+  script:
+    - gradle publish
+  tags:
     - java
     - gradle
   only:

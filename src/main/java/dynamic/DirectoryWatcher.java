@@ -207,7 +207,7 @@ public class DirectoryWatcher {
 								Attributes attr = manifest.getMainAttributes();
 								Set<Object> keys = attr.keySet();
 								for (Object o : keys) {
-//									System.out.println("Key: " + o + " -- Value: " + attr.get(o));
+									System.out.println("Key: " + o + " -- Value: " + attr.get(o));
 								}
 							}
 							if (filename.endsWith(CLASS_SUFFIX)) {

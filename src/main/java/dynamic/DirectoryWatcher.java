@@ -126,7 +126,7 @@ public class DirectoryWatcher {
             }
 
             Class<?> clazz = cl.loadClass(mainClass);
-            if (!clazz.isAssignableFrom(IPluginLoader.class)) {
+            if (!IPluginLoader.class.isAssignableFrom(clazz)) {
                 ErrorLogger.getInstance().error("Plugin has Main-Class of incorrect type. File: " + jar);
                 close(toClose);
                 return;

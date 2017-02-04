@@ -1,52 +1,19 @@
 package dynamic;
-/*
- * Copyright (c) 2008, 2010, Oracle and/or its affiliates. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   - Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *
- *   - Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- *   - Neither the name of Oracle nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
- * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
 
+import utils.ErrorLogger;
+
+import java.io.Closeable;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.*;
-import java.time.chrono.IsoChronology;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import static java.nio.file.StandardWatchEventKinds.*;
+import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
+import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
 /**
  * Example to watch a directory (or tree) for changes to files.
@@ -55,35 +22,7 @@ import static java.nio.file.StandardWatchEventKinds.*;
 public class DirectoryWatcher {
 
     private final WatchService watcher;
-    private final Map<WatchKey, Path> keys;
     private final Path basePath;
-    private boolean trace = false;
-    private static final String CLASS_SUFFIX = ".class";
-
-    @SuppressWarnings("unchecked")
-    static <T> WatchEvent<T> cast(WatchEvent<?> event) {
-        return (WatchEvent<T>) event;
-    }
-
-    /**
-     * Register the given directory with the WatchService
-     *
-     * @throws ClassNotFoundException
-     */
-    private void register(Path dir) throws IOException, ClassNotFoundException {
-        WatchKey key = dir.register(watcher, ENTRY_CREATE);
-        if (trace) {
-            Path prev = keys.get(key);
-            if (prev == null) {
-                System.out.format("register: %s\n", dir);
-            } else {
-                if (!dir.equals(prev)) {
-                    System.out.format("update: %s -> %s\n", prev, dir);
-                }
-            }
-        }
-        keys.put(key, dir);
-    }
 
     /**
      * Creates a WatchService and registers the given directory
@@ -100,11 +39,28 @@ public class DirectoryWatcher {
         basePath = filePath.toPath();
 
         this.watcher = FileSystems.getDefault().newWatchService();
-        this.keys = new HashMap<WatchKey, Path>();
-        register(basePath);
+    }
 
-        // enable trace after initial registration
-        this.trace = true;
+    public void start() {
+        new Thread(this::startProcessing).start();
+    }
+
+    private void startProcessing() {
+        processDirectory();
+        processEvents();
+    }
+
+    private void processDirectory() {
+        File[] files = basePath.toFile().listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getName().endsWith(".jar");
+            }
+        });
+
+        for(File file: files) {
+            loadJar(file.toPath());
+        }
     }
 
     /**
@@ -120,12 +76,6 @@ public class DirectoryWatcher {
                 return;
             }
 
-            Path dir = keys.get(key);
-            if (dir == null) {
-                System.err.println("WatchKey not recognized!!");
-                continue;
-            }
-
             for (WatchEvent<?> event : key.pollEvents()) {
                 WatchEvent.Kind kind = event.kind();
 
@@ -134,7 +84,7 @@ public class DirectoryWatcher {
                 }
 
                 // Context for directory entry event is the file name of entry
-                WatchEvent<Path> ev = cast(event);
+                WatchEvent<Path> ev = (WatchEvent<Path>) event;
                 Path path = basePath.resolve(ev.context()).toAbsolutePath();
                 // print out event
                 System.out.format("%s: %s\n", event.kind().name(), path);
@@ -143,14 +93,8 @@ public class DirectoryWatcher {
             }
 
             // reset key and remove from set if directory no longer accessible
-            boolean valid = key.reset();
-            if (!valid) {
-                keys.remove(key);
-
-                // all directories are inaccessible
-                if (keys.isEmpty()) {
-                    break;
-                }
+            if (!key.reset()) {
+                break;
             }
         }
     }
@@ -163,47 +107,50 @@ public class DirectoryWatcher {
             URL[] urls = {new URL("jar:file:" + jar.toAbsolutePath() + "!/")};
             URLClassLoader cl = URLClassLoader.newInstance(urls);
 
-//            Enumeration<JarEntry> entries = jf.entries();
-//            while (entries.hasMoreElements()) {
-//                JarEntry element = entries.nextElement();
-//                String filename = element.getName();
-////							System.out.println(filename);
-//                if (filename.endsWith(".MF")) {
-//                    // Manifest
-//                    Manifest manifest = jf.getManifest();
-//                    Attributes attr = manifest.getMainAttributes();
-//                    Set<Object> keys = attr.keySet();
-//                    for (Object o : keys) {
-//                        System.out.println("Key: " + o + " -- Value: " + attr.get(o));
-//                    }
-//                }
-//                if (filename.endsWith(CLASS_SUFFIX)) {
-//                    filename = element.getName().substring(0, element.getName().length() - 6);
-//                    filename = filename.replace('/', '.');
-//                    try {
-//                        Class c = cl.loadClass(filename);
-////									System.out.println("Class object: " + c);
-//                    } catch (NoClassDefFoundError e) {
-//                        System.out.println(e.getMessage());
-//                    } catch (ClassNotFoundException e) {
-//                        e.printStackTrace();
-//                    }
-//                }
-//            }
-            String mainClass = jf.getManifest().getMainAttributes().getValue("Main-Class");
-            String contextRoot = jf.getManifest().getMainAttributes().getValue("contextRoot");
+            Manifest manifest = jf.getManifest();
 
-            System.out.println(mainClass);
-            System.out.println(contextRoot);
-            // TODO: Use the following Methods to init servlet
-//            Class<? extends IServlet> mainClazz = (Class<? extends IServlet>) cl.loadClass(mainClass);
-//            IServlet servlet = mainClazz.getConstructor(String.class).newInstance("ROOTDIRECTORY");
+            Closeable[] toClose = {jf,cl};
 
-            jf.close();
-            cl.close();
+            if(manifest == null) {
+                ErrorLogger.getInstance().error("Plugin has no manifest. File: " + jar);
+                close(toClose);
+                return;
+            }
+
+            String mainClass = manifest.getMainAttributes().getValue("Main-Class");
+
+            if(mainClass == null) {
+                ErrorLogger.getInstance().error("Plugin has no Main-Class defined. File: " + jar);
+                close(toClose);
+                return;
+            }
+
+            Class<?> clazz = cl.loadClass(mainClass);
+            if (!clazz.isAssignableFrom(IPluginLoader.class)) {
+                ErrorLogger.getInstance().error("Plugin has Main-Class of incorrect type. File: " + jar);
+                close(toClose);
+                return;
+            }
+
+            Class<? extends IPluginLoader> mainClazz = (Class<? extends IPluginLoader>) clazz;
+            IPluginLoader servlet = mainClazz.newInstance();
+            servlet.init();
+
+            close(toClose);
         } catch (IOException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
-
+    
+    private void close(Closeable[] close) throws IOException {
+        for (Closeable c: close) {
+            c.close();
+        }
+    }
 }

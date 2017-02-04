@@ -25,7 +25,7 @@ public class SimpleWebServer {
 		
 		// Create Watch Service
         DirectoryWatcher watcher = new DirectoryWatcher(dir);
-        new Thread(watcher::processEvents).start();
+        watcher.start();
 
 		// Create a run the server
 		Server server = new Server(rootDirectory, port);

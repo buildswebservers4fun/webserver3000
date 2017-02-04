@@ -317,3 +317,4 @@ gradle-app.setting
 .idea/
 logs/
 /application.properties
+plugins/

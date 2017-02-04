@@ -67,6 +67,12 @@ public class DirectoryWatcher {
      * Process all events for keys queued to the watcher
      */
     public void processEvents() {
+        try {
+            basePath.register(this.watcher, ENTRY_CREATE);
+        } catch (IOException e) {
+            ErrorLogger.getInstance().error("Unable to register watcher for plugin directory.", e);
+            return;
+        }
         for (; ; ) {
             // wait for key to be signaled
             WatchKey key;
@@ -87,7 +93,6 @@ public class DirectoryWatcher {
                 WatchEvent<Path> ev = (WatchEvent<Path>) event;
                 Path path = basePath.resolve(ev.context()).toAbsolutePath();
                 // print out event
-                System.out.format("%s: %s\n", event.kind().name(), path);
                 if (path.toFile().getName().endsWith(".jar") && kind == ENTRY_CREATE)
                     loadJar(path);
             }
@@ -101,7 +106,6 @@ public class DirectoryWatcher {
 
     private void loadJar(Path jar) {
         try {
-            System.out.println("In jar class loading stuff");
             JarFile jf = new JarFile(jar.toFile());
 
             URL[] urls = {new URL("jar:file:" + jar.toAbsolutePath() + "!/")};

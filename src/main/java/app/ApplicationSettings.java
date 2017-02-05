@@ -15,7 +15,7 @@ public class ApplicationSettings {
 
 	private String rootDirectory;
 	private int port;
-	private Path plugins;
+	private String plugins;
 	
 	public ApplicationSettings(File properties) throws IOException {
 		Properties prop = new Properties();
@@ -32,9 +32,9 @@ public class ApplicationSettings {
 		FileReader fr = new FileReader(properties);
 		prop.load(fr);
 		
-		rootDirectory = prop.getProperty("rootDirectory", "./");
+		rootDirectory = prop.getProperty("rootDirectory", "web");
 		port = Integer.parseInt(prop.getProperty("port", "8080"));
-		plugins = Paths.get(prop.getProperty("plugins", ".\\plugins"));
+		plugins = prop.getProperty("plugins", "plugins");
 	}
 	
 	public String getRootDirectory() {
@@ -45,7 +45,7 @@ public class ApplicationSettings {
 		return this.port;
 	}
 	
-	public Path getPluginsDirectory() {
+	public String getPluginsDirectory() {
 		return this.plugins;
 	}
 }

@@ -21,15 +21,12 @@ public class SimpleWebServer {
 		
 		String rootDirectory = settings.getRootDirectory();
 		int port = settings.getPort();
-		Path dir = settings.getPluginsDirectory();
+		String dir = settings.getPluginsDirectory();
 		
 		// Create Watch Service
-        new DirectoryWatcher(dir, false).processEvents();
-		
-		// Create Watch Service
-		Path dir = Paths.get("./plugins");
-        new DirectoryWatcher(dir, false).processEvents();
-		
+        DirectoryWatcher watcher = new DirectoryWatcher(dir);
+        watcher.start();
+
 		// Create a run the server
 		Server server = new Server(rootDirectory, port);
 		server.start();

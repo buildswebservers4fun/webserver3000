@@ -49,7 +49,13 @@ public class HttpRequest {
 	 * @return
 	 */
 	public String getContextRoot() {
-		return uri.split("/")[1];
+		String[] split = uri.split("/");
+		if(split.length >=1 ) {
+			return split[1];
+		} else {
+			return null;
+		}
+		
 	}
 	
 	public String getRelativeURI() {

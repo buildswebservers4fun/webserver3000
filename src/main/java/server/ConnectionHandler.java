@@ -99,19 +99,31 @@ public class ConnectionHandler implements Runnable {
 		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
 			response = build400Response();
 		} else {
-			response = defaultServlet.handle(request);
+
 			
-			// TODO keep map of already instantiated classes for efficiency			
-//			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
-//			IPluginRouter pluginRouter;
-//			try {
-//				pluginRouter = router.newInstance();
-//				pluginRouter.forwardRequest(request);
-//			} catch (InstantiationException | IllegalAccessException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			// TODO keep map of already instantiated classes for efficiency
+			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
+			System.out.println("got context root: " + request.getContextRoot());
 			
+			
+			// Send a 404 if there is no plugin for the context root.
+			if(router == null) {
+				response = build404Response();
+			} else {
+				// Else search for a plugin that uses the context root
+				
+				IPluginRouter pluginRouter;
+				try {
+					pluginRouter = router.newInstance();
+					pluginRouter.forwardRequest(request);
+				} catch (InstantiationException | IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+//				response = defaultServlet.handle(request);
+			}
+
 		}
 
 		if (response == null)
@@ -124,6 +136,16 @@ public class ConnectionHandler implements Runnable {
 			// We will ignore this exception
 			ErrorLogger.getInstance().error(e);
 		}
+	}
+
+	private IHttpResponse build404Response() {
+		HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
+		responseBuilder.setStatus(Protocol.NOT_FOUND_CODE);
+		responseBuilder.setPhrase(Protocol.NOT_FOUND_TEXT);
+		responseBuilder.setHeaders(new HashMap<String, String>());
+		responseBuilder.setConnection(Protocol.CLOSE);
+
+		return responseBuilder.build();
 	}
 
 	private IHttpResponse build400Response() {

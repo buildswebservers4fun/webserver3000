@@ -1,5 +1,8 @@
 package dynamic;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
 import dynamic.handler.*;
 import protocol.HttpRequest;
 import protocol.response.IHttpResponse;
@@ -22,6 +25,21 @@ public interface IServlet extends IGetHandler, IHeadHandler, IPostHandler, IPutH
                 return handleDelete(request);
             default:
                 return null;
+        }
+    }
+    
+    default void handle(HttpRequest request, OutputStream outStream) throws IOException {
+        switch(request.getMethod().toUpperCase()) {
+            case "GET":
+                handleGet(request).write(outStream);
+            case "HEAD":
+            	handleGet(request).write(outStream);
+            case "PUT":
+            	handleGet(request).write(outStream);
+            case "POST":
+            	handleGet(request).write(outStream);
+            case "DELETE":
+            	handleGet(request).write(outStream);
         }
     }
 }

@@ -1,5 +1,6 @@
 package server;
 
+import dynamic.IPluginRouter;
 import dynamic.IServlet;
 import protocol.HttpRequest;
 import protocol.Protocol;
@@ -28,11 +29,18 @@ import java.util.HashMap;
 public class ConnectionHandler implements Runnable {
 	private Socket socket;
 	private IServlet defaultServlet;
-	
+	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
+
+	// TODO pass in plugins
 	public ConnectionHandler(String rootDirectory, Socket socket) {
 		this.socket = socket;
 
+		contextRootToPlugin = new HashMap<String, Class<? extends IPluginRouter>>();
 		defaultServlet = DefaultHandler.createDefaultHandler(rootDirectory);
+	}
+
+	public void SetPluginMap(HashMap<String, Class<? extends IPluginRouter>> map) {
+		this.contextRootToPlugin = map;
 	}
 
 	/**
@@ -51,7 +59,7 @@ public class ConnectionHandler implements Runnable {
 			inStream = this.socket.getInputStream();
 			outStream = this.socket.getOutputStream();
 		} catch (IOException e) {
-            ErrorLogger.getInstance().error(e);
+			ErrorLogger.getInstance().error(e);
 			return;
 		}
 
@@ -65,15 +73,15 @@ public class ConnectionHandler implements Runnable {
 			if (status == Protocol.BAD_REQUEST_CODE) {
 				response = build400Response();
 			} else if (status == Protocol.NOT_SUPPORTED_CODE) {
-                response = build400Response();
-            }
+				response = build400Response();
+			}
 		} catch (ServerException e) {
 			ErrorLogger.getInstance().error(e);
 			response = build400Response();
 		}
 
-        // Means there was an error, now write the response object to the
-        if (response != null) {
+		// Means there was an error, now write the response object to the
+		if (response != null) {
 			try {
 				response.write(outStream);
 			} catch (IOException e) {
@@ -84,17 +92,22 @@ public class ConnectionHandler implements Runnable {
 		}
 
 		// We reached here means no error so far, so lets process further
-        // Fill in the code to create a response for version mismatch.
-        // You may want to use constants such as Protocol.VERSION,
-        // Protocol.NOT_SUPPORTED_CODE, and more.
-        // You can check if the version matches as follows
-        if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
-            response = build400Response();
-        } else {
+		// Fill in the code to create a response for version mismatch.
+		// You may want to use constants such as Protocol.VERSION,
+		// Protocol.NOT_SUPPORTED_CODE, and more.
+		// You can check if the version matches as follows
+		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
+			response = build400Response();
+		} else {
 			response = defaultServlet.handle(request);
-        }
+			
+			String contextRoot = request.getContextRoot();
+			// TODO get context root from request
+			// and forward request to plugin
+			
+		}
 
-        if(response == null)
+		if (response == null)
 			response = build400Response();
 
 		try {
@@ -105,14 +118,14 @@ public class ConnectionHandler implements Runnable {
 			ErrorLogger.getInstance().error(e);
 		}
 	}
-	
+
 	private IHttpResponse build400Response() {
 		HttpResponseBuilder responseBuilder = new HttpResponseBuilder();
 		responseBuilder.setStatus(Protocol.BAD_REQUEST_CODE);
 		responseBuilder.setPhrase(Protocol.BAD_REQUEST_TEXT);
 		responseBuilder.setHeaders(new HashMap<String, String>());
 		responseBuilder.setConnection(Protocol.CLOSE);
-		
+
 		return responseBuilder.build();
 	}
 }

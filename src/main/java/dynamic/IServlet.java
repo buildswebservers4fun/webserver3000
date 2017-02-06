@@ -18,14 +18,19 @@ public interface IServlet extends IGetHandler, IHeadHandler, IPostHandler, IPutH
         switch(request.getMethod().toUpperCase()) {
             case "GET":
                 handleGet(request).write(outStream);
+                break;
             case "HEAD":
                 handleHead(request).write(outStream);
+                break;
             case "PUT":
                 handlePut(request).write(outStream);
+                break;
             case "POST":
                 handlePost(request).write(outStream);
+                break;
             case "DELETE":
                 handleDelete(request).write(outStream);
+                break;
         }
     }
 }

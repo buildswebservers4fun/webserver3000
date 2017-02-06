@@ -100,29 +100,29 @@ public class ConnectionHandler implements Runnable {
 			response = build400Response();
 		} else {
 
-			
-			// TODO keep map of already instantiated classes for efficiency
-			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
-			System.out.println("got context root: " + request.getContextRoot());
-			
-			
-			// Send a 404 if there is no plugin for the context root.
-			if(router == null) {
-				response = build404Response();
-			} else {
-				// Else search for a plugin that uses the context root
-				
-				IPluginRouter pluginRouter;
-				try {
-					pluginRouter = router.newInstance();
-					pluginRouter.forwardRequest(request);
-				} catch (InstantiationException | IllegalAccessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-//				response = defaultServlet.handle(request);
-			}
+//			
+//			// TODO keep map of already instantiated classes for efficiency
+//			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
+//			System.out.println("got context root: " + request.getContextRoot());
+//			
+//			
+//			// Send a 404 if there is no plugin for the context root.
+//			if(router == null) {
+//				response = build404Response();
+//			} else {
+//				// Else search for a plugin that uses the context root
+//				
+//				IPluginRouter pluginRouter;
+//				try {
+//					pluginRouter = router.newInstance();
+//					pluginRouter.forwardRequest(request);
+//				} catch (InstantiationException | IllegalAccessException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				
+				response = defaultServlet.handle(request);
+//			}
 
 		}
 

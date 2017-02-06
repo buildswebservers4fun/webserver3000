@@ -154,7 +154,7 @@ public class DirectoryWatcher extends Observable {
 			Class<? extends IPluginRouter> mainClazz = (Class<? extends IPluginRouter>) clazz;
 			contextRootToPluginRouter.put(contextRoot, mainClazz);
 
-			notifyObservers();
+			notifyObservers(contextRootToPluginRouter);
 
 			// TODO change this to add a plugin router to a map instead of
 			// calling init on a plugin loader

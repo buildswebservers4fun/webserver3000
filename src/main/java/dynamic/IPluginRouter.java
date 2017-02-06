@@ -7,11 +7,6 @@ import protocol.HttpRequest;
  */
 public interface IPluginRouter {
 
-    /**
-     * Registers all servlets for this plugin with the server.
-     * TODO: Add arugments to allow fo registering
-     */
-    void init();
-    
+   
     void forwardRequest(HttpRequest request);
 }

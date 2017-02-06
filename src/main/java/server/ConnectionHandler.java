@@ -102,15 +102,15 @@ public class ConnectionHandler implements Runnable {
 			response = defaultServlet.handle(request);
 			
 			// TODO keep map of already instantiated classes for efficiency			
-			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
-			IPluginRouter pluginRouter;
-			try {
-				pluginRouter = router.newInstance();
-				pluginRouter.forwardRequest(request);
-			} catch (InstantiationException | IllegalAccessException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+//			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
+//			IPluginRouter pluginRouter;
+//			try {
+//				pluginRouter = router.newInstance();
+//				pluginRouter.forwardRequest(request);
+//			} catch (InstantiationException | IllegalAccessException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			
 		}
 

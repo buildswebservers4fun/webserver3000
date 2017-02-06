@@ -18,29 +18,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/lgpl.html>.
  * 
  */
- 
+
 package server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import dynamic.IPluginRouter;
+import dynamic.IServlet;
 import utils.ErrorLogger;
 
 /**
- * This represents a welcoming server for the incoming
- * TCP request from a HTTP client such as a web browser. 
+ * This represents a welcoming server for the incoming TCP request from a HTTP
+ * client such as a web browser.
  * 
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
-public class Server {
+public class Server implements Observer {
 	private String rootDirectory;
 	private int port;
 	private ServerSocket welcomeSocket;
-	
+	private ConnectionHandler handler;
+
 	Logger logger = LogManager.getLogger(this.getClass());
 
 	/**
@@ -61,7 +68,6 @@ public class Server {
 		return rootDirectory;
 	}
 
-
 	/**
 	 * Gets the port number for this web server.
 	 * 
@@ -70,11 +76,11 @@ public class Server {
 	public int getPort() {
 		return port;
 	}
-	
+
 	/**
-	 * The entry method for the main server thread that accepts incoming
-	 * TCP connection request and creates a {@link ConnectionHandler} for
-	 * the request.
+	 * The entry method for the main server thread that accepts incoming TCP
+	 * connection request and creates a {@link ConnectionHandler} for the
+	 * request.
 	 */
 	public void start() {
 		try {
@@ -84,45 +90,53 @@ public class Server {
 			ErrorLogger.getInstance().error(e);
 			throw e;
 		}
-		
+
 		try {
 			// Now keep welcoming new connections until stop flag is set to true
-			logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port, rootDirectory));
-			while(true) {
+			logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port,
+					rootDirectory));
+			while (true) {
 				// Listen for incoming socket connection
 				// This method block until somebody makes a request
 				Socket connectionSocket = welcomeSocket.accept();
-				// Create a handler for this incoming connection and start the handler in a new thread
-				ConnectionHandler handler = new ConnectionHandler(this.getRootDirectory(), connectionSocket);
+				// Create a handler for this incoming connection and start the
+				// handler in a new thread
+				handler = new ConnectionHandler(this.getRootDirectory(), connectionSocket);
 				new Thread(handler).start();
 			}
 		} catch (SocketException e) {
 			// Ignore these
-		}
-		catch(Exception e) {
+		} catch (Exception e) {
 			ErrorLogger.getInstance().error(e);
 		}
-			
-		
+
 	}
-	
+
 	/**
 	 * Stops the server from listening further.
 	 */
 	public synchronized void stop() {
-		if(!welcomeSocket.isClosed())
-		try {
-			welcomeSocket.close();
-		} catch (IOException e) { }
+		if (!welcomeSocket.isClosed())
+			try {
+				welcomeSocket.close();
+			} catch (IOException e) {
+			}
 	}
-	
+
 	/**
 	 * Checks if the server is stopeed or not.
+	 * 
 	 * @return
 	 */
 	public boolean isStoped() {
-		if(this.welcomeSocket != null)
+		if (this.welcomeSocket != null)
 			return this.welcomeSocket.isClosed();
 		return true;
+	}
+
+	@Override
+	public void update(Observable o, Object obj) {
+		HashMap<String, Class<? extends IPluginRouter>> map = (HashMap<String, Class<? extends IPluginRouter>>) obj;
+		handler.SetPluginMap(map);
 	}
 }

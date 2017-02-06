@@ -44,6 +44,7 @@ import com.google.api.client.http.HttpResponse;
 import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
+import dynamic.DirectoryWatcher;
 import protocol.Protocol;
 import server.Server;
 
@@ -52,9 +53,10 @@ import server.Server;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ServerEndToEndTest {
-	final String tempRootDirectory = "tempWeb";
+	final String TEMP_ROOT_DIRECTORY = "tempWeb";
 	final String SERVER_PATH = "http://localhost:";
 	final int port = 47097;
+	final String PLUGINS_DIRECTORY = "plugins";
 	File tempDir;
 	File file;
 
@@ -67,13 +69,13 @@ public class ServerEndToEndTest {
 	@Before
 	public void setUp() throws Exception {
 		// make temporary directory and file
-		tempDir = new File(tempRootDirectory);
+		tempDir = new File(TEMP_ROOT_DIRECTORY);
 		tempDir.mkdir();
 		if (!tempDir.exists()) {
 			fail("temp dir failed to be created");
 		}
 
-		file = new File(tempRootDirectory, "testFile.txt");
+		file = new File(TEMP_ROOT_DIRECTORY, "testFile.txt");
 		file.createNewFile();
 
 		PrintWriter writer = new PrintWriter(file, "UTF-8");
@@ -83,8 +85,14 @@ public class ServerEndToEndTest {
 		if (!file.exists()) {
 			fail("temp file failed to be created");
 		}
+		
+		// Create Watch Service
+        DirectoryWatcher watcher = new DirectoryWatcher(PLUGINS_DIRECTORY);
+        watcher.start();
 
-		server = new Server(tempRootDirectory, port);
+		server = new Server(TEMP_ROOT_DIRECTORY, port);
+		watcher.addObserver(server);
+		
 		runner = new Thread(new Runnable() {
 
 			@Override
@@ -142,7 +150,7 @@ public class ServerEndToEndTest {
 	public void testGetDefaultExists() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
-		File file = new File(tempRootDirectory, Protocol.DEFAULT_FILE);
+		File file = new File(TEMP_ROOT_DIRECTORY, Protocol.DEFAULT_FILE);
 		file.createNewFile();
 
 		HttpRequest requestGet = transport.createRequestFactory()
@@ -199,7 +207,7 @@ public class ServerEndToEndTest {
 	public void testHeadDirectory200() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
-		File file = new File(tempRootDirectory, Protocol.DEFAULT_FILE);
+		File file = new File(TEMP_ROOT_DIRECTORY, Protocol.DEFAULT_FILE);
 		file.createNewFile();
 
 		HttpRequest requestGet = transport.createRequestFactory()
@@ -251,7 +259,7 @@ public class ServerEndToEndTest {
 		String test = "new file";
 		byte[] bytes = test.getBytes();
 		HttpContent content = new ByteArrayContent("type", bytes);
-		File delete = new File(tempRootDirectory, "testFile2.txt");
+		File delete = new File(TEMP_ROOT_DIRECTORY, "testFile2.txt");
 		delete.delete();
 		assertEquals(false, delete.exists());
 		HttpRequest requestPut = transport.createRequestFactory()
@@ -269,7 +277,7 @@ public class ServerEndToEndTest {
 	public void testDeleteFileExists() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
-		File file = new File(tempRootDirectory, "testFile3.txt");
+		File file = new File(TEMP_ROOT_DIRECTORY, "testFile3.txt");
 		file.createNewFile();
 
 		HttpRequest requestGet1 = transport.createRequestFactory()
@@ -309,7 +317,7 @@ public class ServerEndToEndTest {
 		String test = "new file";
 		byte[] bytes = test.getBytes();
 		HttpContent content = new ByteArrayContent("type", bytes);
-		File delete = new File(tempRootDirectory, "testFile2.txt");
+		File delete = new File(TEMP_ROOT_DIRECTORY, "testFile2.txt");
 		delete.delete();
 		assertEquals(false, delete.exists());
 		HttpRequest requestPut = transport.createRequestFactory()
@@ -382,7 +390,7 @@ public class ServerEndToEndTest {
 		// tests that a put request creates a new file if the file doesnt exist
 		String test = "contents";
 		String fileName = "postFileDoesntExist";
-		File file = new File(tempRootDirectory, fileName);
+		File file = new File(TEMP_ROOT_DIRECTORY, fileName);
 		try {
 			NetHttpTransport transport = new NetHttpTransport();
 
@@ -419,7 +427,7 @@ public class ServerEndToEndTest {
 	}
 
 	private File createRandomFile() throws IOException {
-		return File.createTempFile("TestFile", "TestFile", new File(tempRootDirectory));
+		return File.createTempFile("TestFile", "TestFile", new File(TEMP_ROOT_DIRECTORY));
 	}
 
 	private void setContentsOfFile(File file, String string) throws IOException {

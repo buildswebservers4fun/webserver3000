@@ -29,6 +29,7 @@ public class SimpleWebServer {
 
 		// Create a run the server
 		Server server = new Server(rootDirectory, port);
+		watcher.addObserver(server);
 		server.start();
 	}
 }

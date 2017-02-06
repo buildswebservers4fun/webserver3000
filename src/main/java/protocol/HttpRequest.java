@@ -43,6 +43,25 @@ public class HttpRequest {
 	public String getUri() {
 		return uri;
 	}
+	
+	/**
+	 * The context root of the URI.
+	 * @return
+	 */
+	public String getContextRoot() {
+		String[] split = uri.split("/");
+		if(split.length >=1 ) {
+			return split[1];
+		} else {
+			return null;
+		}
+		
+	}
+	
+	public String getRelativeURI() {
+		// TODO test this
+		return uri.split(getContextRoot())[1];
+	}
 
 	/**
 	 * The version of the http request.

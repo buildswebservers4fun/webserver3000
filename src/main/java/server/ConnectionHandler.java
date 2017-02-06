@@ -32,14 +32,16 @@ public class ConnectionHandler implements Runnable {
 	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
 
 	// TODO pass in plugins
-	public ConnectionHandler(String rootDirectory, Socket socket) {
+	public ConnectionHandler(String rootDirectory, Socket socket, HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin) {
 		this.socket = socket;
 
-		contextRootToPlugin = new HashMap<String, Class<? extends IPluginRouter>>();
+		this.contextRootToPlugin = contextRootToPlugin;
+		System.out.println("connection handler's plugin map: " + contextRootToPlugin.size());
 		defaultServlet = DefaultHandler.createDefaultHandler(rootDirectory);
 	}
 
 	public void SetPluginMap(HashMap<String, Class<? extends IPluginRouter>> map) {
+		System.out.println("in connection handler");
 		this.contextRootToPlugin = map;
 	}
 
@@ -99,30 +101,31 @@ public class ConnectionHandler implements Runnable {
 		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
 			response = build400Response();
 		} else {
-
-//			
-//			// TODO keep map of already instantiated classes for efficiency
-//			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
-//			System.out.println("got context root: " + request.getContextRoot());
-//			
-//			
-//			// Send a 404 if there is no plugin for the context root.
-//			if(router == null) {
-//				response = build404Response();
-//			} else {
-//				// Else search for a plugin that uses the context root
-//				
-//				IPluginRouter pluginRouter;
-//				try {
-//					pluginRouter = router.newInstance();
-//					pluginRouter.forwardRequest(request);
-//				} catch (InstantiationException | IllegalAccessException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				
-				response = defaultServlet.handle(request);
-//			}
+			System.out.println(contextRootToPlugin.size());
+			System.out.println(contextRootToPlugin.keySet().toString());
+			// TODO keep map of already instantiated classes for efficiency
+			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
+			System.out.println("got context root: " + request.getContextRoot());
+			System.out.println("URI: "+request.getUri());
+			
+			
+			// Send a 404 if there is no plugin for the context root.
+			if(router == null) {
+				response = build404Response();
+			} else {
+				// Else search for a plugin that uses the context root
+				
+				IPluginRouter pluginRouter;
+				try {
+					pluginRouter = router.newInstance();
+					pluginRouter.forwardRequest(request);
+				} catch (InstantiationException | IllegalAccessException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+//				response = defaultServlet.handle(request);
+			}
 
 		}
 

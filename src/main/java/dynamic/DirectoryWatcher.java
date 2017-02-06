@@ -134,6 +134,12 @@ public class DirectoryWatcher extends Observable {
 
 			// Get context root out of the manifest
 			String contextRoot = manifest.getMainAttributes().getValue("Context-Root");
+			
+			if (contextRoot == null) {
+				ErrorLogger.getInstance().error("Plugin has no Context-Root defined. File: " + jar);
+				close(toClose);
+				return;
+			}
 
 			// Get mainClass out of the manifest
 			String mainClass = manifest.getMainAttributes().getValue("Main-Class");
@@ -150,11 +156,18 @@ public class DirectoryWatcher extends Observable {
 				close(toClose);
 				return;
 			}
-
+			
+			if(clazz == null) {
+				ErrorLogger.getInstance().error("Main Class is null. File: " + jar);
+				close(toClose);
+				return;
+			}
+			setChanged();
 			Class<? extends IPluginRouter> mainClazz = (Class<? extends IPluginRouter>) clazz;
 			contextRootToPluginRouter.put(contextRoot, mainClazz);
 
 			notifyObservers(contextRootToPluginRouter);
+			System.out.println("new plugin: " + contextRoot);
 
 			// TODO change this to add a plugin router to a map instead of
 			// calling init on a plugin loader

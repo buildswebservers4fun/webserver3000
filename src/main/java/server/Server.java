@@ -47,6 +47,7 @@ public class Server implements Observer {
 	private int port;
 	private ServerSocket welcomeSocket;
 	private ConnectionHandler handler;
+	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
 
 	Logger logger = LogManager.getLogger(this.getClass());
 
@@ -101,11 +102,13 @@ public class Server implements Observer {
 				Socket connectionSocket = welcomeSocket.accept();
 				// Create a handler for this incoming connection and start the
 				// handler in a new thread
-				handler = new ConnectionHandler(this.getRootDirectory(), connectionSocket);
+				System.out.println("ConnectionHandler Created");
+				handler = new ConnectionHandler(this.getRootDirectory(), connectionSocket, contextRootToPlugin);
 				new Thread(handler).start();
 			}
 		} catch (SocketException e) {
 			// Ignore these
+			System.out.println("socket exception");
 		} catch (Exception e) {
 			ErrorLogger.getInstance().error(e);
 		}
@@ -136,7 +139,8 @@ public class Server implements Observer {
 
 	@Override
 	public void update(Observable o, Object obj) {
-		HashMap<String, Class<? extends IPluginRouter>> map = (HashMap<String, Class<? extends IPluginRouter>>) obj;
-		handler.SetPluginMap(map);
+		System.out.println("server got update");
+		System.out.println(obj.toString());
+		contextRootToPlugin = (HashMap<String, Class<? extends IPluginRouter>>) obj;
 	}
 }

@@ -15,8 +15,10 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Observable;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -123,6 +125,16 @@ public class DirectoryWatcher extends Observable {
 			URLClassLoader cl = URLClassLoader.newInstance(urls);
 
 			Manifest manifest = jf.getManifest();
+			Enumeration<JarEntry> entries = jf.entries();
+			while(entries.hasMoreElements()) {
+				JarEntry element = entries.nextElement();
+				String name = element.getName();
+				if (name.endsWith(".class")) {
+					System.out.println(name);
+					cl.loadClass(name.substring(0, name.length()-6).replace('/', '.'));
+				}
+			}
+			
 
 			Closeable[] toClose = { jf, cl };
 

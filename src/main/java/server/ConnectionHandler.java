@@ -119,6 +119,7 @@ public class ConnectionHandler implements Runnable {
 				try {
 					pluginRouter = router.newInstance();
 					pluginRouter.forwardRequest(request);
+					return;
 				} catch (InstantiationException | IllegalAccessException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

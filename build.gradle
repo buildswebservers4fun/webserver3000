@@ -32,7 +32,7 @@ dependencies {
 task copyDefaultServlet(type: Copy) {
     into "plugins"
 
-
+	from configurations.testRuntime.filter { it.name.startsWith('defaultServlet')}
 }
 
 test.dependsOn copyDefaultServlet

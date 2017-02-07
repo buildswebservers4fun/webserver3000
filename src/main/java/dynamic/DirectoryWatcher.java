@@ -124,7 +124,6 @@ public class DirectoryWatcher {
 
 			URL[] urls = { new URL("jar:file:" + jar.toAbsolutePath() + "!/") };
 			URLClassLoader cl = URLClassLoader.newInstance(urls, getClass().getClassLoader());
-            Thread.currentThread().setContextClassLoader(cl);
 
 			Manifest manifest = jf.getManifest();
             toClose= new Closeable[]{ jf };

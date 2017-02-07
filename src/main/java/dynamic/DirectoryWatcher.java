@@ -133,15 +133,6 @@ public class DirectoryWatcher {
 				return;
 			}
 
-			// Get context root out of the manifest
-			String contextRoot = manifest.getMainAttributes().getValue("Context-Root");
-			
-			if (contextRoot == null) {
-				ErrorLogger.getInstance().error("Plugin has no Context-Root defined. File: " + jar);
-				close(toClose);
-				return;
-			}
-
 			// Get mainClass out of the manifest
 			String mainClass = manifest.getMainAttributes().getValue("Main-Class");
 
@@ -165,7 +156,6 @@ public class DirectoryWatcher {
 			}
 
 			Class<? extends IPluginLoader> mainClazz = (Class<? extends IPluginLoader>) clazz;
-			System.out.println("new plugin: " + contextRoot);
 
             mainClazz.newInstance().init(router, rootDirectory);
 

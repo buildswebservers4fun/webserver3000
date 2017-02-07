@@ -32,10 +32,11 @@ public class ConnectionHandler implements Runnable {
 	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
 
 	// TODO pass in plugins
-	public ConnectionHandler(String rootDirectory, Socket socket) {
+	public ConnectionHandler(String rootDirectory, Socket socket,
+			HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin) {
 		this.socket = socket;
 
-		contextRootToPlugin = new HashMap<String, Class<? extends IPluginRouter>>();
+		this.contextRootToPlugin = contextRootToPlugin;
 		defaultServlet = DefaultHandler.createDefaultHandler(rootDirectory);
 	}
 
@@ -99,31 +100,25 @@ public class ConnectionHandler implements Runnable {
 		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
 			response = build400Response();
 		} else {
+			// TODO keep map of already instantiated classes for efficiency
+			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
 
-//			
-//			// TODO keep map of already instantiated classes for efficiency
-//			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
-//			System.out.println("got context root: " + request.getContextRoot());
-//			
-//			
-//			// Send a 404 if there is no plugin for the context root.
-//			if(router == null) {
-//				response = build404Response();
-//			} else {
-//				// Else search for a plugin that uses the context root
-//				
-//				IPluginRouter pluginRouter;
-//				try {
-//					pluginRouter = router.newInstance();
-//					pluginRouter.forwardRequest(request);
-//				} catch (InstantiationException | IllegalAccessException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//				
-				response = defaultServlet.handle(request);
-//			}
+			// Use the default handler if there is no handler on this context root
+			if (router == null) {
+				router = contextRootToPlugin.get("");
+			}
+			// Else search for a plugin that uses the context root
 
+			IPluginRouter pluginRouter;
+			try {
+				pluginRouter = router.newInstance();
+				pluginRouter.forwardRequest(request, outStream);
+				socket.close();
+				return;
+			} catch (InstantiationException | IllegalAccessException | IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		if (response == null)

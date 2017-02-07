@@ -1,7 +1,6 @@
 package dynamic;
 
 import java.io.OutputStream;
-
 import protocol.HttpRequest;
 
 /**
@@ -9,7 +8,5 @@ import protocol.HttpRequest;
  */
 public interface IPluginRouter {
 
-   
-    void forwardRequest(HttpRequest request);
     void forwardRequest(HttpRequest request, OutputStream outStream);
 }

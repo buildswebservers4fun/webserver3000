@@ -25,11 +25,18 @@ public class SimpleWebServer {
 		
 		// Create Watch Service
         DirectoryWatcher watcher = new DirectoryWatcher(dir);
-        watcher.start();
+        
 
 		// Create a run the server
 		Server server = new Server(rootDirectory, port);
 		watcher.addObserver(server);
+		
+		System.out.println("watcher observer count: " + watcher.countObservers());
+
+		watcher.start();
+		System.out.println(("watcher started"));
 		server.start();
+		System.out.println("server started");
+
 	}
 }

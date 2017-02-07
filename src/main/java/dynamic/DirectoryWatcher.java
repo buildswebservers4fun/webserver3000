@@ -15,8 +15,10 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Observable;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -120,10 +122,9 @@ public class DirectoryWatcher extends Observable {
 			JarFile jf = new JarFile(jar.toFile());
 
 			URL[] urls = { new URL("jar:file:" + jar.toAbsolutePath() + "!/") };
-			URLClassLoader cl = URLClassLoader.newInstance(urls);
+			URLClassLoader cl = URLClassLoader.newInstance(urls, getClass().getClassLoader());
 
 			Manifest manifest = jf.getManifest();
-
 			Closeable[] toClose = { jf, cl };
 
 			if (manifest == null) {
@@ -134,6 +135,12 @@ public class DirectoryWatcher extends Observable {
 
 			// Get context root out of the manifest
 			String contextRoot = manifest.getMainAttributes().getValue("Context-Root");
+			
+			if (contextRoot == null) {
+				ErrorLogger.getInstance().error("Plugin has no Context-Root defined. File: " + jar);
+				close(toClose);
+				return;
+			}
 
 			// Get mainClass out of the manifest
 			String mainClass = manifest.getMainAttributes().getValue("Main-Class");
@@ -150,11 +157,18 @@ public class DirectoryWatcher extends Observable {
 				close(toClose);
 				return;
 			}
-
+			
+			if(clazz == null) {
+				ErrorLogger.getInstance().error("Main Class is null. File: " + jar);
+				close(toClose);
+				return;
+			}
+			setChanged();
 			Class<? extends IPluginRouter> mainClazz = (Class<? extends IPluginRouter>) clazz;
 			contextRootToPluginRouter.put(contextRoot, mainClazz);
 
 			notifyObservers(contextRootToPluginRouter);
+			System.out.println("new plugin: " + contextRoot);
 
 			// TODO change this to add a plugin router to a map instead of
 			// calling init on a plugin loader

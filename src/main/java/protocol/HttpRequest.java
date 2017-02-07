@@ -53,7 +53,7 @@ public class HttpRequest {
 		if(split.length >=1 ) {
 			return split[1];
 		} else {
-			return null;
+			return "";
 		}
 		
 	}

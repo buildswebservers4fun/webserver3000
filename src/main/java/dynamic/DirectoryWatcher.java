@@ -15,10 +15,8 @@ import java.nio.file.Path;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Observable;
-import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
@@ -28,27 +26,29 @@ import utils.ErrorLogger;
  * Example to watch a directory (or tree) for changes to files.
  */
 
-public class DirectoryWatcher extends Observable {
+public class DirectoryWatcher {
 
 	private final WatchService watcher;
 	private final Path basePath;
-	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPluginRouter;
+    private final String rootDirectory;
+    private PluginRouter router;
 
 	/**
 	 * Creates a WatchService and registers the given directory
 	 *
 	 * @throws ClassNotFoundException
 	 */
-	public DirectoryWatcher(String dir) throws IOException, ClassNotFoundException {
-		File filePath = new File(dir);
+	public DirectoryWatcher(String watchDirectory, PluginRouter router, String rootDirectory) throws IOException, ClassNotFoundException {
+		File filePath = new File(watchDirectory);
 
 		if (!filePath.exists()) {
 			filePath.mkdir();
 		}
 
 		basePath = filePath.toPath();
-		contextRootToPluginRouter = new HashMap<String, Class<? extends IPluginRouter>>();
 		this.watcher = FileSystems.getDefault().newWatchService();
+		this.router = router;
+		this.rootDirectory = rootDirectory;
 	}
 
 	public void start() {
@@ -152,7 +152,7 @@ public class DirectoryWatcher extends Observable {
 			}
 
 			Class<?> clazz = cl.loadClass(mainClass);
-			if (!IPluginRouter.class.isAssignableFrom(clazz)) {
+			if (!IPluginLoader.class.isAssignableFrom(clazz)) {
 				ErrorLogger.getInstance().error("Plugin has Main-Class of incorrect type. File: " + jar);
 				close(toClose);
 				return;
@@ -163,23 +163,23 @@ public class DirectoryWatcher extends Observable {
 				close(toClose);
 				return;
 			}
-			setChanged();
-			Class<? extends IPluginRouter> mainClazz = (Class<? extends IPluginRouter>) clazz;
-			contextRootToPluginRouter.put(contextRoot, mainClazz);
 
-			notifyObservers(contextRootToPluginRouter);
+			Class<? extends IPluginLoader> mainClazz = (Class<? extends IPluginLoader>) clazz;
 			System.out.println("new plugin: " + contextRoot);
 
-			// TODO change this to add a plugin router to a map instead of
-			// calling init on a plugin loader
+            mainClazz.newInstance().init(router, rootDirectory);
 
 			close(toClose);
 		} catch (IOException e) {
-			e.printStackTrace();
+			ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
+            ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
+		} catch (IllegalAccessException e) {
+            ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
+        } catch (InstantiationException e) {
+            ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
+        }
+    }
 
 	private void close(Closeable[] close) throws IOException {
 		for (Closeable c : close) {

@@ -9,4 +9,5 @@ import protocol.HttpRequest;
 public interface IPluginRouter {
 
     void forwardRequest(HttpRequest request, OutputStream outStream);
+
 }

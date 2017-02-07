@@ -1,12 +1,11 @@
 package server;
 
-import dynamic.IPluginRouter;
 import dynamic.IServlet;
+import dynamic.PluginRouter;
 import protocol.HttpRequest;
 import protocol.Protocol;
 import protocol.ProtocolException;
 import protocol.ServerException;
-import protocol.handler.DefaultHandler;
 import protocol.response.HttpResponseBuilder;
 import protocol.response.IHttpResponse;
 import utils.AccessLogger;
@@ -16,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.nio.file.Paths;
 import java.util.HashMap;
 
 /**
@@ -27,21 +27,12 @@ import java.util.HashMap;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ConnectionHandler implements Runnable {
+	private final PluginRouter router;
 	private Socket socket;
-	private IServlet defaultServlet;
-	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
 
-	// TODO pass in plugins
-	public ConnectionHandler(String rootDirectory, Socket socket,
-			HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin) {
+	public ConnectionHandler(Socket socket, PluginRouter router) {
 		this.socket = socket;
-
-		this.contextRootToPlugin = contextRootToPlugin;
-		defaultServlet = DefaultHandler.createDefaultHandler(rootDirectory);
-	}
-
-	public void SetPluginMap(HashMap<String, Class<? extends IPluginRouter>> map) {
-		this.contextRootToPlugin = map;
+		this.router = router;
 	}
 
 	/**
@@ -100,24 +91,9 @@ public class ConnectionHandler implements Runnable {
 		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
 			response = build400Response();
 		} else {
-			// TODO keep map of already instantiated classes for efficiency
-			Class<? extends IPluginRouter> router = contextRootToPlugin.get(request.getContextRoot());
-
-			// Use the default handler if there is no handler on this context root
-			if (router == null) {
-				router = contextRootToPlugin.get("");
-			}
-			// Else search for a plugin that uses the context root
-
-			IPluginRouter pluginRouter;
-			try {
-				pluginRouter = router.newInstance();
-				pluginRouter.forwardRequest(request, outStream);
-				socket.close();
-				return;
-			} catch (InstantiationException | IllegalAccessException | IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			IServlet servlet = router.getRoute(Paths.get(request.getUri()));
+			if(servlet != null) {
+				response = servlet.handle(request);
 			}
 		}
 

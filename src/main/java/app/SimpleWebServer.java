@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import dynamic.DirectoryWatcher;
+import dynamic.PluginRouter;
 import server.Server;
 
 /**
@@ -22,21 +23,18 @@ public class SimpleWebServer {
 		String rootDirectory = settings.getRootDirectory();
 		int port = settings.getPort();
 		String dir = settings.getPluginsDirectory();
-		
+
+
+		//
+		PluginRouter router = new PluginRouter();
 		// Create Watch Service
-        DirectoryWatcher watcher = new DirectoryWatcher(dir);
-        
+        DirectoryWatcher watcher = new DirectoryWatcher(dir, router, rootDirectory);
 
 		// Create a run the server
-		Server server = new Server(rootDirectory, port);
-		watcher.addObserver(server);
-		
-		System.out.println("watcher observer count: " + watcher.countObservers());
+		Server server = new Server(rootDirectory, port, router);
 
-		watcher.start();
-		System.out.println(("watcher started"));
+    	watcher.start();
+		System.out.println(("Plugin Watcher Started"));
 		server.start();
-		System.out.println("server started");
-
 	}
 }

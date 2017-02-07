@@ -22,7 +22,9 @@ public class HttpResponseBuilder {
 	private File file;
 	private String connection;
 	private boolean doWriteFile = false;
-	
+	private boolean writeBody;
+	private String bodyText;
+
 	public void setStatus(int status) {
 		this.status = status;
 	}
@@ -68,6 +70,11 @@ public class HttpResponseBuilder {
 	public void setFileName(File file) {
 		this.doWriteFile = false;
 		this.file = file;
+	}
+	
+	public void setBody(String contents) {
+		this.bodyText = contents;
+		this.writeBody = true;
 	}
 	
 	public IHttpResponse build() {
@@ -124,6 +131,9 @@ public class HttpResponseBuilder {
 				// We are reading a file
 				if(doWriteFile && (status == Protocol.OK_CODE || status == Protocol.CREATED_CODE) && file != null) {
 					writeFile(out);
+				}
+				if(writeBody) {
+					out.write(bodyText.getBytes());
 				}
 			}
 			

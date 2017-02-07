@@ -118,18 +118,19 @@ public class DirectoryWatcher {
 	}
 
 	private void loadJar(Path jar) {
+        Closeable[] toClose = null;
 		try {
 			JarFile jf = new JarFile(jar.toFile());
 
 			URL[] urls = { new URL("jar:file:" + jar.toAbsolutePath() + "!/") };
 			URLClassLoader cl = URLClassLoader.newInstance(urls, getClass().getClassLoader());
+            Thread.currentThread().setContextClassLoader(cl);
 
 			Manifest manifest = jf.getManifest();
-			Closeable[] toClose = { jf, cl };
+            toClose= new Closeable[]{ jf };
 
 			if (manifest == null) {
 				ErrorLogger.getInstance().error("Plugin has no manifest. File: " + jar);
-				close(toClose);
 				return;
 			}
 
@@ -138,28 +139,23 @@ public class DirectoryWatcher {
 
 			if (mainClass == null) {
 				ErrorLogger.getInstance().error("Plugin has no Main-Class defined. File: " + jar);
-				close(toClose);
 				return;
 			}
 
 			Class<?> clazz = cl.loadClass(mainClass);
 			if (!IPluginLoader.class.isAssignableFrom(clazz)) {
 				ErrorLogger.getInstance().error("Plugin has Main-Class of incorrect type. File: " + jar);
-				close(toClose);
 				return;
 			}
 			
 			if(clazz == null) {
 				ErrorLogger.getInstance().error("Main Class is null. File: " + jar);
-				close(toClose);
 				return;
 			}
 
 			Class<? extends IPluginLoader> mainClazz = (Class<? extends IPluginLoader>) clazz;
 
             mainClazz.newInstance().init(router, rootDirectory);
-
-			close(toClose);
 		} catch (IOException e) {
 			ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
 		} catch (ClassNotFoundException e) {
@@ -168,6 +164,13 @@ public class DirectoryWatcher {
             ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
         } catch (InstantiationException e) {
             ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, e.toString());
+        } finally {
+		    if(toClose != null)
+                try {
+                    close(toClose);
+                } catch (IOException e) {
+                    ErrorLogger.getInstance().error("Error while closing jar reader: " + jar, e.toString());
+                }
         }
     }
 

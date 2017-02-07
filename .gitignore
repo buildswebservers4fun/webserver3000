@@ -316,6 +316,7 @@ gradle-app.setting
 # End of https://www.gitignore.io/api/eclipse,gradle,intellij,java,linux,macos,python,windows,maven
 .idea/
 logs/
+plugins/
 /application.properties
 
 ### Testing ###

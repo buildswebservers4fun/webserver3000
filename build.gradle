@@ -20,11 +20,20 @@ repositories {
 
 dependencies {
 	testCompile 'junit:junit:4.+'
+    testCompile 'edu.rosehulman.csse477.buildswebservers4fun:defaultServlet:1.2.2'
+
 	compile group: 'com.google.http-client', name: 'google-http-client', version: '1.22.0'
 	compile group: 'com.google.http-client', name: 'google-http-client-jackson', version: '1.22.0'
 	compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.7'
   	compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.7'
 }
+
+task copyDefaultServlet(type: Copy) {
+    into "plugins"
+    from configurations.testRuntime.filter { it.name.startsWith('defaultServlet')}
+}
+
+test.dependsOn copyDefaultServlet
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -161,6 +170,7 @@ remotes {
 		password = System.getenv('SSH_PASSWORD')
 	}
 }
+
 task publishToTest(dependsOn: prod) << {
 	ssh.run {
 		session(remotes.test) {

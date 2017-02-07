@@ -91,7 +91,7 @@ public class ServerEndToEndTest {
 		PluginRouter router = new PluginRouter();
 		// Create Watch Service
         DirectoryWatcher watcher = new DirectoryWatcher(PLUGINS_DIRECTORY, router, TEMP_ROOT_DIRECTORY);
-
+        watcher.start();
 		server = new Server(TEMP_ROOT_DIRECTORY, port, router);
 		runner = new Thread(new Runnable() {
 			@Override
@@ -132,7 +132,7 @@ public class ServerEndToEndTest {
 
 	private boolean serverFailed;
 
-	//@Test
+	@Test
 	public void testGet() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -145,7 +145,7 @@ public class ServerEndToEndTest {
 		assertEquals("test", fileContents);
 	}
 
-	//@Test
+	@Test
 	public void testGetDefaultExists() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -162,7 +162,7 @@ public class ServerEndToEndTest {
 		assertEquals(true, file.delete());
 	}
 
-	//@Test
+	@Test
 	public void testGetDefaultNotFound() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -176,7 +176,7 @@ public class ServerEndToEndTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testHead() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -188,7 +188,7 @@ public class ServerEndToEndTest {
 		assertEquals("", fileContents);
 	}
 
-	//@Test
+	@Test
 	public void testHeadDirectory404() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -202,7 +202,7 @@ public class ServerEndToEndTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testHeadDirectory200() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -218,7 +218,7 @@ public class ServerEndToEndTest {
 		assertEquals(true, file.delete());
 	}
 
-	//@Test
+	@Test
 	public void testHead404() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -232,7 +232,7 @@ public class ServerEndToEndTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testPutFileExists() throws InterruptedException, IOException {
 		// tests that a put request overwrites the file if it does exist
 
@@ -249,7 +249,7 @@ public class ServerEndToEndTest {
 		assertEquals("overwrite", fileContents);
 	}
 
-	//@Test
+	@Test
 	public void testPutFileDoesntExist() throws InterruptedException, IOException {
 		// tests that a put request creates a new file if the file doesnt exist
 
@@ -272,7 +272,7 @@ public class ServerEndToEndTest {
 		assertEquals(false, delete.exists());
 	}
 
-	//@Test
+	@Test
 	public void testDeleteFileExists() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -294,7 +294,7 @@ public class ServerEndToEndTest {
 		assertEquals(false, file.exists());
 	}
 
-	//@Test
+	@Test
 	public void testDeleteFileDoesntExist() throws InterruptedException, IOException {
 		NetHttpTransport transport = new NetHttpTransport();
 
@@ -329,7 +329,7 @@ public class ServerEndToEndTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testPostFileDoesExist() throws InterruptedException, IOException {
 		// tests that a put request overwrites the file if it does exist
 		NetHttpTransport transport = new NetHttpTransport();
@@ -358,7 +358,7 @@ public class ServerEndToEndTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testPostDirectory() throws InterruptedException, IOException {
 		// tests that a put request overwrites the file if it does exist
 		NetHttpTransport transport = new NetHttpTransport();
@@ -384,7 +384,7 @@ public class ServerEndToEndTest {
 		}
 	}
 
-	//@Test
+	@Test
 	public void testPostFileDoesntExist() throws InterruptedException, IOException {
 		// tests that a put request creates a new file if the file doesnt exist
 		String test = "contents";

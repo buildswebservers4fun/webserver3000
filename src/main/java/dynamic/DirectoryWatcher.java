@@ -81,7 +81,7 @@ public class DirectoryWatcher {
 		});
 
 		for (File file : files) {
-			loadJar(file.toPath());
+			loadJar(file.toPath().toAbsolutePath());
 		}
 	}
 
@@ -90,7 +90,7 @@ public class DirectoryWatcher {
 	 */
 	public void processEvents() {
 		try {
-			basePath.register(this.watcher, ENTRY_CREATE);
+			basePath.register(this.watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 		} catch (IOException e) {
 			ErrorLogger.getInstance().error("Unable to register watcher for plugin directory.", e);
 			return;
@@ -131,6 +131,7 @@ public class DirectoryWatcher {
                         loadedJar.getPluginLoader().unload(router);
                         loadJar(path);
                     } else if (kind == ENTRY_DELETE) {
+
 				        LoadedJar loadedJar = loadedJars.get(path);
                         URLClassLoader cl = loadedJar.getClassLoader();
                         if(cl != null) {
@@ -158,7 +159,7 @@ public class DirectoryWatcher {
         Closeable[] toClose = null;
 		try {
 		    Path temp = runtimePath.resolve(jar.getFileName());
-            Files.copy(jar , temp);
+            Files.copy(jar , temp, StandardCopyOption.REPLACE_EXISTING);
             Path newJar = temp;
 
             JarFile jf = new JarFile(newJar.toFile());
@@ -202,7 +203,6 @@ public class DirectoryWatcher {
 			IPluginLoader loader = mainClazz.newInstance();
             loader.init(router, rootDirectory);
             loadedJars.put(jar, new LoadedJar(cl, loader));
-
 		} catch (IOException e) {
 			ErrorLogger.getInstance().error("Error while trying to load plugin: " + jar, ExceptionUtil.exceptionToString(e));
 			System.out.println(e.toString());

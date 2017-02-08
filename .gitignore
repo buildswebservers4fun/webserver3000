@@ -318,6 +318,6 @@ gradle-app.setting
 logs/
 plugins/
 /application.properties
-
+web/
 ### Testing ###
 /tempWeb/

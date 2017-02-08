@@ -5,4 +5,5 @@ package dynamic;
  */
 public interface IPluginLoader {
      void init(PluginRouter router, String rootDirectory);
+     void unload(PluginRouter router);
 }

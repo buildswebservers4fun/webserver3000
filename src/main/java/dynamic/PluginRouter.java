@@ -31,4 +31,8 @@ public class PluginRouter {
 
         return null;
     }
+
+    public void removeRoute(Path directory) {
+        routes.remove(directory);
+    }
 }

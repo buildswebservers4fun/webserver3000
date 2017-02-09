@@ -208,4 +208,8 @@ public class Server implements Observer {
         System.out.println(obj.toString());
         contextRootToPlugin = (HashMap<String, Class<? extends IPluginRouter>>) obj;
     }
+    
+    private boolean isHighLoad() {
+        return false;
+    }
 }

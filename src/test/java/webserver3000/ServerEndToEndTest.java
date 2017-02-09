@@ -226,7 +226,7 @@ public class ServerEndToEndTest {
 				.buildHeadRequest(new GenericUrl(new URL(SERVER_PATH + port + "/asdfasdfasd")));
 		try {
 			HttpResponse responseGet = requestGet.execute();
-			fail("Should of thrown 404");
+			fail("Should of thrown 404, threw " + responseGet.getStatusCode());
 		} catch (HttpResponseException e) {
 			// Pass
 		}

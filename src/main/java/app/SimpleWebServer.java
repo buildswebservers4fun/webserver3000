@@ -24,11 +24,12 @@ public class SimpleWebServer {
 		int port = settings.getPort();
 		String dir = settings.getPluginsDirectory();
 
-
+		Thread.currentThread().setName("Server-thread");
 		//
 		PluginRouter router = new PluginRouter();
 		// Create Watch Service
         DirectoryWatcher watcher = new DirectoryWatcher(dir, router, rootDirectory);
+        Heartbeat heartbeat = new Heartbeat(settings.getPort(), settings.getErrorCount(), settings.getInterval());
 
 		// Create a run the server
 		Server server = new Server(rootDirectory, port, router);

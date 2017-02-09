@@ -58,6 +58,7 @@ public class Server implements Observer {
     private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
     private List<InetAddress> ipBlacklist;
     private File ipBlacklistFile = new File("./ipBlacklist.csv");
+    private ResponseWriter responseWriter;
 
     Logger logger = LogManager.getLogger(this.getClass());
 
@@ -72,7 +73,6 @@ public class Server implements Observer {
         this.router = router;
         
         loadIpBlacklist(ipBlacklistFile);
-
     }
 
     /**
@@ -106,6 +106,10 @@ public class Server implements Observer {
             ErrorLogger.getInstance().error(e);
             throw e;
         }
+        
+        
+        this.responseWriter = new ResponseWriter();
+        new Thread(responseWriter).start();
 
         try {
             // Now keep welcoming new connections until stop flag is set to true
@@ -117,11 +121,11 @@ public class Server implements Observer {
                 Socket connectionSocket = welcomeSocket.accept();
                 // Create a handler for this incoming connection and start the
                 // handler in a new thread
-
+                
                 // Check blacklist for IP from connection
                 if (!ipBlacklist.contains(connectionSocket.getInetAddress())) {
                     System.out.println("ConnectionHandler Created");
-                    handler = new ConnectionHandler(connectionSocket, router);
+                    handler = new ConnectionHandler(connectionSocket, router, responseWriter);
                     new Thread(handler).start();
                 } else {
                     connectionSocket.close();

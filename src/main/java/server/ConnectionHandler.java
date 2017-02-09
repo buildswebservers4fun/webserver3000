@@ -1,5 +1,12 @@
 package server;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.Socket;
+import java.nio.file.Paths;
+import java.util.HashMap;
+
 import dynamic.IServlet;
 import dynamic.PluginRouter;
 import protocol.HttpRequest;
@@ -10,13 +17,6 @@ import protocol.response.HttpResponseBuilder;
 import protocol.response.IHttpResponse;
 import utils.AccessLogger;
 import utils.ErrorLogger;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.nio.file.Paths;
-import java.util.HashMap;
 
 /**
  * This class is responsible for handling a incoming request by creating a
@@ -29,10 +29,12 @@ import java.util.HashMap;
 public class ConnectionHandler implements Runnable {
     private final PluginRouter router;
     private Socket socket;
+    private ResponseWriter responseWriter;
 
-    public ConnectionHandler(Socket socket, PluginRouter router) {
+    public ConnectionHandler(Socket socket, PluginRouter router, ResponseWriter responseWriter) {
         this.socket = socket;
         this.router = router;
+        this.responseWriter = responseWriter;
     }
 
     /**
@@ -53,16 +55,12 @@ public class ConnectionHandler implements Runnable {
             return;
         }
 
-        HttpRequest request = loadRequest(inStream, outStream);
+        HttpRequest request = loadRequest(inStream, outStream, responseWriter);
         IHttpResponse response = processRequestAndGenerateResponse(request);
 
-        try {
-            response.write(outStream);
-            socket.close();
-        } catch (IOException e) {
-            // We will ignore this exception
-            ErrorLogger.getInstance().error(e);
-        }
+        //            response.write(outStream);
+        responseWriter.addToQueue(response, socket);
+//            socket.close();
     }
 
     private IHttpResponse build404Response() {
@@ -93,7 +91,7 @@ public class ConnectionHandler implements Runnable {
      * @param outStream
      * @return
      */
-    private HttpRequest loadRequest(InputStream inStream, OutputStream outStream) {
+    private HttpRequest loadRequest(InputStream inStream, OutputStream outStream, ResponseWriter responseWriter) {
         HttpRequest request = null;
         IHttpResponse response = null;
         try {
@@ -113,13 +111,9 @@ public class ConnectionHandler implements Runnable {
 
         // Means there was an error, now write the response object to the
         if (response != null) {
-            try {
-                response.write(outStream);
-                socket.close();
-            } catch (IOException e) {
-                // We will ignore this exception
-                ErrorLogger.getInstance().error(e);
-            }
+            //                response.write(outStream);
+            responseWriter.addToQueue(response, socket);
+//                socket.close();
             return null;
         }
         return request;

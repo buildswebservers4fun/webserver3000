@@ -49,7 +49,7 @@ public class ResponseWriter implements Runnable {
     }
 }
 
-class ResponseAndSocket {
+class ResponseAndSocket implements Comparable<ResponseAndSocket>{
     private IHttpResponse response;
     private Socket socket;
     
@@ -72,5 +72,14 @@ class ResponseAndSocket {
 
     public void setSocket(Socket socket) {
         this.socket = socket;
+    }
+
+    @Override
+    public int compareTo(ResponseAndSocket ras) {
+        if (this.socket.equals(ras.getSocket()) && this.response.equals(ras.getResponse())) {
+            return 0;
+        } else {
+            return this.response.compareTo(ras.getResponse());
+        }
     }
 }

@@ -63,6 +63,7 @@ public class ConnectionHandler implements Runnable {
 		try {
 			timeSent = System.currentTimeMillis();
 			request = HttpRequest.read(inStream);
+			request.addTimestamp(Long.toString(timeSent));
 			AccessLogger.getInstance().info(request);
 		} catch (ProtocolException pe) {
 			int status = pe.getStatus();

@@ -29,9 +29,11 @@ import java.util.HashMap;
 public class ConnectionHandler implements Runnable {
 	private final PluginRouter router;
 	private Socket socket;
+	private Server server;
 
-	public ConnectionHandler(Socket socket, PluginRouter router) {
+	public ConnectionHandler(Socket socket, Server server, PluginRouter router) {
 		this.socket = socket;
+		this.server = server;
 		this.router = router;
 	}
 
@@ -46,6 +48,7 @@ public class ConnectionHandler implements Runnable {
 		// cohesive and extensible
 		InputStream inStream = null;
 		OutputStream outStream = null;
+		long timeSent = 0;
 
 		try {
 			inStream = this.socket.getInputStream();
@@ -58,6 +61,7 @@ public class ConnectionHandler implements Runnable {
 		HttpRequest request = null;
 		IHttpResponse response = null;
 		try {
+			timeSent = System.currentTimeMillis();
 			request = HttpRequest.read(inStream);
 			AccessLogger.getInstance().info(request);
 		} catch (ProtocolException pe) {
@@ -107,6 +111,14 @@ public class ConnectionHandler implements Runnable {
 			// We will ignore this exception
 			ErrorLogger.getInstance().error(e);
 		}
+		long test = Long.parseLong(response.getHeaders().get(Protocol.TIME_RECEIVED));
+		
+//		System.out.println(timeSent);
+//		System.out.println(test);
+		
+		long timediff = test - timeSent;
+		this.server.addLatency(timediff);
+		System.out.println(timediff + " ms");
 	}
 
 	private IHttpResponse build404Response() {

@@ -28,11 +28,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 
-import dynamic.PluginRouter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +46,7 @@ import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import dynamic.DirectoryWatcher;
+import dynamic.PluginRouter;
 import protocol.Protocol;
 import server.Server;
 
@@ -87,11 +88,10 @@ public class ServerEndToEndTest {
 			fail("temp file failed to be created");
 		}
 
-
 		PluginRouter router = new PluginRouter();
 		// Create Watch Service
-        DirectoryWatcher watcher = new DirectoryWatcher(PLUGINS_DIRECTORY, router, TEMP_ROOT_DIRECTORY);
-        watcher.start();
+		DirectoryWatcher watcher = new DirectoryWatcher(PLUGINS_DIRECTORY, router, TEMP_ROOT_DIRECTORY);
+		watcher.start();
 		server = new Server(TEMP_ROOT_DIRECTORY, port, router);
 		runner = new Thread(new Runnable() {
 			@Override
@@ -412,6 +412,106 @@ public class ServerEndToEndTest {
 			assertEquals(false, file.exists());
 		}
 
+	}
+
+	@Test
+	public void testLatencyGet1000Times() throws MalformedURLException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+
+		for (int i = 0; i < 1000; i++) {
+			HttpRequest requestGet = transport.createRequestFactory()
+					.buildGetRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")));
+			requestGet.execute();
+		}
+
+		long average = this.server.computeAverageLatency();
+		System.out.println("Average latency for 1000 GET requests: " + average + " ms");
+
+		assert (true);
+	}
+
+	@Test
+	public void testLatencyPost1000Times() throws IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+
+		for (int i = 0; i < 1000; i++) {
+			String start = "Original ";
+			String test = "new file";
+			File file = createRandomFile();
+			setContentsOfFile(file, start);
+
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPost = transport.createRequestFactory()
+					.buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/" + file.getName())), content);
+			requestPost.execute();
+		}
+		
+		long average = this.server.computeAverageLatency();
+		System.out.println("Average latency for 1000 POST requests: " + average + " ms");
+	}
+	
+	@Test
+	public void testLatencyPost1000TimesLargeFile() throws IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+		
+		String start = "";
+		for (int i = 0; i < 10000; i++) {
+			start += "abc";
+		}
+		
+		for (int i = 0; i < 1000; i++) {
+			String test = "new file";
+			File file = createRandomFile();
+			setContentsOfFile(file, start);
+
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPost = transport.createRequestFactory()
+					.buildPostRequest(new GenericUrl(new URL(SERVER_PATH + port + "/" + file.getName())), content);
+			requestPost.execute();
+		}
+		
+		long average = this.server.computeAverageLatency();
+		System.out.println("Average latency for 1000 POST requests: " + average + " ms");
+	}
+	
+	@Test
+	public void testLatencyPut1000Times() throws MalformedURLException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+
+		for (int i = 0; i < 1000; i++) {
+			String test = "overwrite";
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPut = transport.createRequestFactory()
+					.buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")), content);
+			requestPut.execute();
+		}
+		
+		long average = this.server.computeAverageLatency();
+		System.out.println("Average latency for 1000 PUT requests: " + average + " ms");
+	}
+	
+	@Test
+	public void testLatencyPut1000TimesLargeFile() throws MalformedURLException, IOException {
+		NetHttpTransport transport = new NetHttpTransport();
+
+		String test = "";
+		for (int i = 0; i < 10000; i++) {
+			test += "abc";
+		}
+		
+		for (int i = 0; i < 1000; i++) {
+			byte[] bytes = test.getBytes();
+			HttpContent content = new ByteArrayContent("type", bytes);
+			HttpRequest requestPut = transport.createRequestFactory()
+					.buildPutRequest(new GenericUrl(new URL(SERVER_PATH + port + "/testFile.txt")), content);
+			requestPut.execute();
+		}
+		
+		long average = this.server.computeAverageLatency();
+		System.out.println("Average latency for 1000 PUT requests: " + average + " ms");
 	}
 
 	static String convertStreamToString(InputStream is, Charset set) throws IOException {

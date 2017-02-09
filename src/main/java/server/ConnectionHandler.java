@@ -29,9 +29,11 @@ import java.util.HashMap;
 public class ConnectionHandler implements Runnable {
 	private final PluginRouter router;
 	private Socket socket;
+	private Server server;
 
-	public ConnectionHandler(Socket socket, PluginRouter router) {
+	public ConnectionHandler(Socket socket, Server server, PluginRouter router) {
 		this.socket = socket;
+		this.server = server;
 		this.router = router;
 	}
 
@@ -115,6 +117,7 @@ public class ConnectionHandler implements Runnable {
 //		System.out.println(test);
 		
 		long timediff = test - timeSent;
+		this.server.addLatency(timediff);
 		System.out.println(timediff + " ms");
 	}
 

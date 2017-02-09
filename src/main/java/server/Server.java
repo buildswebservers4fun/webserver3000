@@ -25,15 +25,16 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
-import dynamic.PluginRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import dynamic.IPluginRouter;
+import dynamic.PluginRouter;
 import utils.ErrorLogger;
 
 /**
@@ -49,6 +50,7 @@ public class Server implements Observer {
 	private ServerSocket welcomeSocket;
 	private ConnectionHandler handler;
 	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
+	private ArrayList<Long> latencies;
 
 	Logger logger = LogManager.getLogger(this.getClass());
 
@@ -61,6 +63,7 @@ public class Server implements Observer {
 		this.rootDirectory = rootDirectory;
 		this.port = port;
 		this.router = router;
+		this.latencies = new ArrayList<Long>();
 	}
 
 	/**
@@ -79,6 +82,40 @@ public class Server implements Observer {
 	 */
 	public int getPort() {
 		return port;
+	}
+	
+	/**
+	 * Gets the list of latency calculations for all connection handlers
+	 * 
+	 * @return
+	 */
+	public ArrayList<Long> getLatencies() {
+		return this.latencies;
+	}
+	
+	/**
+	 * Adds the argument to the internal list of latencies measured by each connection handler
+	 * 
+	 * @param latency
+	 */
+	public void addLatency(long latency) {
+		this.latencies.add(latency);
+	}
+	
+	/**
+	 * Computes the average latency of all connections thus far and returns the result
+	 * 
+	 * @return
+	 */
+	public long computeAverageLatency() {
+		long avg = 0;
+		
+		for (long l : this.latencies) {
+			avg += l;
+		}
+		avg /= this.latencies.size();
+		
+		return avg;
 	}
 
 	/**
@@ -106,7 +143,7 @@ public class Server implements Observer {
 				// Create a handler for this incoming connection and start the
 				// handler in a new thread
 				System.out.println("ConnectionHandler Created");
-				handler = new ConnectionHandler(connectionSocket, router);
+				handler = new ConnectionHandler(connectionSocket, this, router);
 				new Thread(handler).start();
 			}
 		} catch (SocketException e) {

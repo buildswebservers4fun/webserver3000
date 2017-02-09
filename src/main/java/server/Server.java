@@ -138,6 +138,10 @@ public class Server implements Observer {
 
     }
 
+    /**
+     * Loads the IP blacklist file.
+     * @param ipBlacklist2
+     */
     private void loadIpBlacklist(File ipBlacklist2) {
         try {
             this.ipBlacklist = new ArrayList<InetAddress>();
@@ -162,6 +166,18 @@ public class Server implements Observer {
             System.out.println("Error parsing IP blacklist file.");
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * Adds a new IP to the blacklist file
+     * @param ip
+     * @return if successful or not
+     */
+    public boolean addToIpBlacklist(InetAddress ip) {
+        // TODO
+        loadIpBlacklist(ipBlacklistFile);
+        return false;
+        
     }
 
     /**

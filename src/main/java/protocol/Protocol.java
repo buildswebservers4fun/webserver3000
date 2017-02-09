@@ -71,6 +71,7 @@ public class Protocol {
     public static final String DATE = "Date";
     public static final String Server = "Server";
     public static final String LAST_MODIFIED = "Last-Modified";
+    public static final String TIME_RECEIVED = "Time Received";
     public static final String CONTENT_LENGTH = "Content-Length";
     public static final String CONTENT_TYPE = "Content-Type";
     

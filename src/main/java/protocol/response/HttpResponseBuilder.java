@@ -90,6 +90,8 @@ public class HttpResponseBuilder {
 		// Lets add extra header with provider info
 		headers.put(Protocol.PROVIDER, Protocol.AUTHOR);
 		
+		headers.put(Protocol.TIME_RECEIVED, Long.toString(System.currentTimeMillis()));
+		
 		return new IHttpResponse() {
 
 			@Override
@@ -125,6 +127,11 @@ public class HttpResponseBuilder {
 			@Override
 			public int getStatus() {
 				return status;
+			}
+			
+			@Override
+			public Map<String, String> getHeaders() {
+				return headers;
 			}
 
 			private void writeBody(OutputStream out) throws IOException {

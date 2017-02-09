@@ -46,6 +46,7 @@ public class ConnectionHandler implements Runnable {
 		// cohesive and extensible
 		InputStream inStream = null;
 		OutputStream outStream = null;
+		long timeSent = 0;
 
 		try {
 			inStream = this.socket.getInputStream();
@@ -58,6 +59,7 @@ public class ConnectionHandler implements Runnable {
 		HttpRequest request = null;
 		IHttpResponse response = null;
 		try {
+			timeSent = System.currentTimeMillis();
 			request = HttpRequest.read(inStream);
 			AccessLogger.getInstance().info(request);
 		} catch (ProtocolException pe) {
@@ -107,6 +109,13 @@ public class ConnectionHandler implements Runnable {
 			// We will ignore this exception
 			ErrorLogger.getInstance().error(e);
 		}
+		long test = Long.parseLong(response.getHeaders().get(Protocol.TIME_RECEIVED));
+		
+//		System.out.println(timeSent);
+//		System.out.println(test);
+		
+		long timediff = test - timeSent;
+		System.out.println(timediff + " ms");
 	}
 
 	private IHttpResponse build404Response() {

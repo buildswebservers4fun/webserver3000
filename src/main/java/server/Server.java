@@ -21,19 +21,26 @@
 
 package server;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import dynamic.PluginRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import au.com.bytecode.opencsv.CSVReader;
 import dynamic.IPluginRouter;
+import dynamic.PluginRouter;
 import utils.ErrorLogger;
 
 /**
@@ -43,107 +50,146 @@ import utils.ErrorLogger;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class Server implements Observer {
-	private final PluginRouter router;
-	private String rootDirectory;
-	private int port;
-	private ServerSocket welcomeSocket;
-	private ConnectionHandler handler;
-	private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
+    private final PluginRouter router;
+    private String rootDirectory;
+    private int port;
+    private ServerSocket welcomeSocket;
+    private ConnectionHandler handler;
+    private HashMap<String, Class<? extends IPluginRouter>> contextRootToPlugin;
+    private List<InetAddress> ipBlacklist;
+    private File ipBlacklistFile = new File("./ipBlacklist.csv");
 
-	Logger logger = LogManager.getLogger(this.getClass());
+    Logger logger = LogManager.getLogger(this.getClass());
 
-	/**
-	 * @param rootDirectory
-	 * @param port
-	 * @param router
-	 */
-	public Server(String rootDirectory, int port, PluginRouter router) {
-		this.rootDirectory = rootDirectory;
-		this.port = port;
-		this.router = router;
-	}
+    /**
+     * @param rootDirectory
+     * @param port
+     * @param router
+     */
+    public Server(String rootDirectory, int port, PluginRouter router) {
+        this.rootDirectory = rootDirectory;
+        this.port = port;
+        this.router = router;
+        
+        loadIpBlacklist(ipBlacklistFile);
 
-	/**
-	 * Gets the root directory for this web server.
-	 * 
-	 * @return the rootDirectory
-	 */
-	public String getRootDirectory() {
-		return rootDirectory;
-	}
+    }
 
-	/**
-	 * Gets the port number for this web server.
-	 * 
-	 * @return the port
-	 */
-	public int getPort() {
-		return port;
-	}
+    /**
+     * Gets the root directory for this web server.
+     * 
+     * @return the rootDirectory
+     */
+    public String getRootDirectory() {
+        return rootDirectory;
+    }
 
-	/**
-	 * The entry method for the main server thread that accepts incoming TCP
-	 * connection request and creates a {@link ConnectionHandler} for the
-	 * request.
-	 */
-	public void start() {
-		try {
-			this.welcomeSocket = new ServerSocket(port);
-		} catch (IOException e1) {
-			RuntimeException e = new RuntimeException("Server unable to start", e1);
-			ErrorLogger.getInstance().error(e);
-			throw e;
-		}
+    /**
+     * Gets the port number for this web server.
+     * 
+     * @return the port
+     */
+    public int getPort() {
+        return port;
+    }
 
-		try {
-			// Now keep welcoming new connections until stop flag is set to true
-			logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port,
-					rootDirectory));
-			while (true) {
-				// Listen for incoming socket connection
-				// This method block until somebody makes a request
-				Socket connectionSocket = welcomeSocket.accept();
-				// Create a handler for this incoming connection and start the
-				// handler in a new thread
-				System.out.println("ConnectionHandler Created");
-				handler = new ConnectionHandler(connectionSocket, router);
-				new Thread(handler).start();
-			}
-		} catch (SocketException e) {
-			// Ignore these
-			System.out.println("socket exception");
-		} catch (Exception e) {
-			ErrorLogger.getInstance().error(e);
-		}
+    /**
+     * The entry method for the main server thread that accepts incoming TCP
+     * connection request and creates a {@link ConnectionHandler} for the
+     * request.
+     */
+    public void start() {
+        try {
+            this.welcomeSocket = new ServerSocket(port);
+        } catch (IOException e1) {
+            RuntimeException e = new RuntimeException("Server unable to start", e1);
+            ErrorLogger.getInstance().error(e);
+            throw e;
+        }
 
-	}
+        try {
+            // Now keep welcoming new connections until stop flag is set to true
+            logger.info(String.format("Simple Web Server started at port %d and serving the %s directory ...%n", port,
+                    rootDirectory));
+            while (true) {
+                // Listen for incoming socket connection
+                // This method block until somebody makes a request
+                Socket connectionSocket = welcomeSocket.accept();
+                // Create a handler for this incoming connection and start the
+                // handler in a new thread
 
-	/**
-	 * Stops the server from listening further.
-	 */
-	public synchronized void stop() {
-		if (!welcomeSocket.isClosed())
-			try {
-				welcomeSocket.close();
-			} catch (IOException e) {
-			}
-	}
+                // Check blacklist for IP from connection
+                if (!ipBlacklist.contains(connectionSocket.getInetAddress())) {
+                    System.out.println("ConnectionHandler Created");
+                    handler = new ConnectionHandler(connectionSocket, router);
+                    new Thread(handler).start();
+                } else {
+                    connectionSocket.close();
+                    System.out.println("Blacklisted IP attempted connection: " + connectionSocket.getInetAddress());
+                }
 
-	/**
-	 * Checks if the server is stopeed or not.
-	 * 
-	 * @return
-	 */
-	public boolean isStoped() {
-		if (this.welcomeSocket != null)
-			return this.welcomeSocket.isClosed();
-		return true;
-	}
+            }
+        } catch (SocketException e) {
+            // Ignore these
+            System.out.println("socket exception");
+        } catch (Exception e) {
+            ErrorLogger.getInstance().error(e);
+        }
 
-	@Override
-	public void update(Observable o, Object obj) {
-		System.out.println("server got update");
-		System.out.println(obj.toString());
-		contextRootToPlugin = (HashMap<String, Class<? extends IPluginRouter>>) obj;
-	}
+    }
+
+    private void loadIpBlacklist(File ipBlacklist2) {
+        try {
+            this.ipBlacklist = new ArrayList<InetAddress>();
+
+            CSVReader reader = new CSVReader(new FileReader(ipBlacklist2), '\t');
+
+            String[] nextLine;
+            while ((nextLine = reader.readNext()) != null) {
+                System.out.println("IP Blacklist: ");
+                for(String s : nextLine) {
+                    this.ipBlacklist.add(InetAddress.getByName(s));
+                    System.out.println("next ip: " + s);
+                }
+            }
+            reader.close();
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            System.out.println("Error: IP blacklist file not found.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            System.out.println("Error parsing IP blacklist file.");
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Stops the server from listening further.
+     */
+    public synchronized void stop() {
+        if (!welcomeSocket.isClosed())
+            try {
+                welcomeSocket.close();
+            } catch (IOException e) {
+            }
+    }
+
+    /**
+     * Checks if the server is stopeed or not.
+     * 
+     * @return
+     */
+    public boolean isStoped() {
+        if (this.welcomeSocket != null)
+            return this.welcomeSocket.isClosed();
+        return true;
+    }
+
+    @Override
+    public void update(Observable o, Object obj) {
+        System.out.println("server got update");
+        System.out.println(obj.toString());
+        contextRootToPlugin = (HashMap<String, Class<? extends IPluginRouter>>) obj;
+    }
 }

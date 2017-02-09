@@ -92,7 +92,7 @@ public class ServerEndToEndTest {
 		// Create Watch Service
         DirectoryWatcher watcher = new DirectoryWatcher(PLUGINS_DIRECTORY, router, TEMP_ROOT_DIRECTORY);
         watcher.start();
-		server = new Server(TEMP_ROOT_DIRECTORY, port, router);
+		server = new Server(TEMP_ROOT_DIRECTORY, port, router, false, 0);
 		runner = new Thread(new Runnable() {
 			@Override
 			public void run() {

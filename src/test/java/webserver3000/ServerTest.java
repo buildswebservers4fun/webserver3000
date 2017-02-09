@@ -22,7 +22,7 @@ public class ServerTest {
 	public void testRootAndPort() throws InterruptedException {
 		String rootDirectory = "testRoot";
 		int port = 47097;
-		Server server = new Server(rootDirectory, 47097, null);
+		Server server = new Server(rootDirectory, 47097, null, false, 0);
 
 		assertEquals(rootDirectory, server.getRootDirectory());
 		assertEquals(port, server.getPort());

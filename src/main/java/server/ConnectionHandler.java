@@ -17,6 +17,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Map;
 
 /**
  * This class is responsible for handling a incoming request by creating a
@@ -27,12 +29,22 @@ import java.util.HashMap;
  * @author Chandan R. Rupakheti (rupakhet@rose-hulman.edu)
  */
 public class ConnectionHandler implements Runnable {
+	private long cacheTimeLimit = 10000;
 	private final PluginRouter router;
+	private final boolean isCacheEnabled;
 	private Socket socket;
 
-	public ConnectionHandler(Socket socket, PluginRouter router) {
+	private static Map<String, CachedItem<IHttpResponse>> CachedResponses;
+
+	static {
+		CachedResponses = new Hashtable<>();
+	}
+
+	public ConnectionHandler(Socket socket, PluginRouter router, boolean cacheEnable, long cacheTimeLimit) {
 		this.socket = socket;
 		this.router = router;
+		this.isCacheEnabled = cacheEnable;
+		this.cacheTimeLimit = cacheTimeLimit;
 	}
 
 	/**
@@ -71,7 +83,9 @@ public class ConnectionHandler implements Runnable {
 			ErrorLogger.getInstance().error(e);
 			response = build400Response();
 		}
-
+		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
+			response = build400Response();
+		}
 		// Means there was an error, now write the response object to the
 		if (response != null) {
 			try {
@@ -83,22 +97,42 @@ public class ConnectionHandler implements Runnable {
 			return;
 		}
 
-		// We reached here means no error so far, so lets process further
-		// Fill in the code to create a response for version mismatch.
-		// You may want to use constants such as Protocol.VERSION,
-		// Protocol.NOT_SUPPORTED_CODE, and more.
-		// You can check if the version matches as follows
-		if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
-			response = build400Response();
-		} else {
+		boolean cacheHit = false;
+		if(isCacheEnabled && request.getMethod().toUpperCase().equals("GET") && CachedResponses.containsKey(request.getUri())) {
+			CachedItem<IHttpResponse> cachedItem = CachedResponses.get(request.getUri());
+
+			if(cachedItem.getCreatedTime() + cacheTimeLimit > System.currentTimeMillis()) {
+				response = cachedItem.getItem();
+				cacheHit = true;
+				AccessLogger.getInstance().info("Cache Hit on: " + request.getUri());
+			}
+			else {
+				CachedResponses.remove(request.getUri());
+			}
+		}
+		if (!cacheHit){
 			IServlet servlet = router.getRoute(Paths.get(request.getUri()));
 			if(servlet != null) {
 				response = servlet.handle(request);
 			}
+			if(isCacheEnabled && request.getMethod().toUpperCase().equals("GET") && response != null) {
+				CachedResponses.put(request.getUri(), new CachedItem<>(System.currentTimeMillis(), response));
+				AccessLogger.getInstance().info("Cache Miss on: " + request.getUri());
+			}
 		}
+
 
 		if (response == null)
 			response = build400Response();
+		else if(isCacheEnabled) {
+			switch(request.getMethod().toUpperCase()) {
+				case "DELETE":
+				case "PUT":
+				case "POST":
+					CachedResponses.remove(request.getUri());
+					break;
+			}
+		}
 
 		try {
 			response.write(outStream);

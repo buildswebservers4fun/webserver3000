@@ -16,7 +16,10 @@ public class ApplicationSettings {
 	private String rootDirectory;
 	private int port;
 	private String plugins;
-	
+	private boolean cacheEnabled;
+	private long cacheTimeLimit;
+
+
 	public ApplicationSettings(File properties) throws IOException {
 		Properties prop = new Properties();
 		String propName = "application.properties";
@@ -35,6 +38,8 @@ public class ApplicationSettings {
 		rootDirectory = prop.getProperty("rootDirectory", "web");
 		port = Integer.parseInt(prop.getProperty("port", "8080"));
 		plugins = prop.getProperty("plugins", "plugins");
+		cacheEnabled = Boolean.parseBoolean(prop.getProperty("cache-enabled", Boolean.toString(true)));
+		cacheTimeLimit = Long.parseLong(prop.getProperty("cache-time-limit", Long.toString(10000)));
 	}
 	
 	public String getRootDirectory() {
@@ -47,5 +52,13 @@ public class ApplicationSettings {
 	
 	public String getPluginsDirectory() {
 		return this.plugins;
+	}
+
+	public boolean isCacheEnabled() {
+		return cacheEnabled;
+	}
+
+	public long getCacheTimeLimit() {
+		return cacheTimeLimit;
 	}
 }

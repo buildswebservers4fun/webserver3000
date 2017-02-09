@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Observable;
 import java.util.Observer;
 
+import app.ApplicationSettings;
 import dynamic.PluginRouter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,6 +45,8 @@ import utils.ErrorLogger;
  */
 public class Server implements Observer {
 	private final PluginRouter router;
+	private final boolean isCacheEnabled;
+	private final long cacheTimeLimit;
 	private String rootDirectory;
 	private int port;
 	private ServerSocket welcomeSocket;
@@ -52,15 +55,16 @@ public class Server implements Observer {
 
 	Logger logger = LogManager.getLogger(this.getClass());
 
-	/**
-	 * @param rootDirectory
-	 * @param port
-	 * @param router
-	 */
-	public Server(String rootDirectory, int port, PluginRouter router) {
+	public Server(ApplicationSettings settings, PluginRouter router) {
+		this(settings.getRootDirectory(), settings.getPort(), router, settings.isCacheEnabled(), settings.getCacheTimeLimit());
+	}
+
+	public Server(String rootDirectory, int port, PluginRouter router, boolean isCacheEnabled, long cacheTimeLimit) {
 		this.rootDirectory = rootDirectory;
 		this.port = port;
 		this.router = router;
+		this.isCacheEnabled = isCacheEnabled;
+		this.cacheTimeLimit = cacheTimeLimit;
 	}
 
 	/**
@@ -106,7 +110,7 @@ public class Server implements Observer {
 				// Create a handler for this incoming connection and start the
 				// handler in a new thread
 				System.out.println("ConnectionHandler Created");
-				handler = new ConnectionHandler(connectionSocket, router);
+				handler = new ConnectionHandler(connectionSocket, router,isCacheEnabled, cacheTimeLimit);
 				new Thread(handler).start();
 			}
 		} catch (SocketException e) {

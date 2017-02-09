@@ -19,19 +19,13 @@ public class SimpleWebServer {
 		// DONE: Server configuration, ideally we want to read these from an application.properties file
 		File properties = new File("./application.properties");
 		ApplicationSettings settings = new ApplicationSettings(properties);
-		
-		String rootDirectory = settings.getRootDirectory();
-		int port = settings.getPort();
-		String dir = settings.getPluginsDirectory();
 
-
-		//
 		PluginRouter router = new PluginRouter();
 		// Create Watch Service
-        DirectoryWatcher watcher = new DirectoryWatcher(dir, router, rootDirectory);
+        DirectoryWatcher watcher = new DirectoryWatcher(settings.getPluginsDirectory(), router, settings.getRootDirectory());
 
 		// Create a run the server
-		Server server = new Server(rootDirectory, port, router);
+		Server server = new Server(settings, router);
 
     	watcher.start();
 		System.out.println(("Plugin Watcher Started"));

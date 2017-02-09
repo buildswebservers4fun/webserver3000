@@ -2,10 +2,13 @@ package protocol.response;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.FileNameMap;
 import java.net.URLConnection;
 import java.util.Calendar;
@@ -179,6 +182,32 @@ public class HttpResponseBuilder {
 				buffer.append("\n----------------------------------\n");
 				return buffer.toString();
 			}
+
+            @Override
+            public int compareTo(IHttpResponse o) {
+                if(this.getSize() > o.getSize()) {
+                    return 1;
+                } else if(this.getSize() > o.getSize()) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+            
+            public int getSize() {
+                Serializable ser = null;
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos;
+                try {
+                    oos = new ObjectOutputStream(baos);
+                    oos.writeObject(ser);
+                    oos.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                return baos.size();
+            }
 		};
 	}
 }

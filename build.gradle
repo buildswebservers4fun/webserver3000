@@ -131,6 +131,7 @@ test {
 	jacoco {
 		append = false
 	}
+	testLogging.showStandardStreams = true
 }
 
 test.finalizedBy(jacocoTestReport)

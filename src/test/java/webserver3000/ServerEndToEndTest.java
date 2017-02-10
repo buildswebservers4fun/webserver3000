@@ -28,11 +28,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 
-import dynamic.PluginRouter;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,6 +46,7 @@ import com.google.api.client.http.HttpResponseException;
 import com.google.api.client.http.javanet.NetHttpTransport;
 
 import dynamic.DirectoryWatcher;
+import dynamic.PluginRouter;
 import protocol.Protocol;
 import server.Server;
 

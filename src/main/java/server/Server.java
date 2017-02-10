@@ -49,9 +49,10 @@ public class Server {
 	private final boolean isCacheEnabled;
 	private final long cacheTimeLimit;
     private final PluginRouter router;
+    private final ArrayList<Long> latencies;
     private String rootDirectory;
     private int port;
-    private ServerSocket welcomeSocket;
+    private ServerSocket serverSocket;
     private ConnectionHandler handler;
     private List<InetAddress> ipBlacklist;
     private File ipBlacklistFile = new File("./ipBlacklist.csv");
@@ -71,6 +72,7 @@ public class Server {
 		this.cacheTimeLimit = cacheTimeLimit;
 
         loadIpBlacklist(ipBlacklistFile);
+		this.latencies = new ArrayList<Long>();
 	}
 
     /**
@@ -82,14 +84,48 @@ public class Server {
         return rootDirectory;
     }
 
-    /**
-     * Gets the port number for this web server.
-     *
-     * @return the port
-     */
-    public int getPort() {
-        return port;
-    }
+	/**
+	 * Gets the port number for this web server.
+	 *
+	 * @return the port
+	 */
+	public int getPort() {
+		return port;
+	}
+
+	/**
+	 * Gets the list of latency calculations for all connection handlers
+	 *
+	 * @return
+	 */
+	public ArrayList<Long> getLatencies() {
+		return this.latencies;
+	}
+
+	/**
+	 * Adds the argument to the internal list of latencies measured by each connection handler
+	 *
+	 * @param latency
+	 */
+	public void addLatency(long latency) {
+		this.latencies.add(latency);
+	}
+
+	/**
+	 * Computes the average latency of all connections thus far and returns the result
+	 *
+	 * @return
+	 */
+	public long computeAverageLatency() {
+		long avg = 0;
+
+		for (long l : this.latencies) {
+			avg += l;
+		}
+		avg /= this.latencies.size();
+
+		return avg;
+	}
 
     /**
      * The entry method for the main server thread that accepts incoming TCP
@@ -97,8 +133,9 @@ public class Server {
      * request.
      */
     public void start() {
+
         try {
-            this.welcomeSocket = new ServerSocket(port);
+            setupServerSocket();
         } catch (IOException e1) {
             RuntimeException e = new RuntimeException("Server unable to start", e1);
             ErrorLogger.getInstance().error(e);
@@ -116,14 +153,14 @@ public class Server {
             while (true) {
                 // Listen for incoming socket connection
                 // This method block until somebody makes a request
-                Socket connectionSocket = welcomeSocket.accept();
+                Socket connectionSocket = getServerSocket().accept();
                 // Create a handler for this incoming connection and start the
                 // handler in a new thread
 
                 // Check blacklist for IP from connection
                 if (!ipBlacklist.contains(connectionSocket.getInetAddress())) {
                     System.out.println("ConnectionHandler Created");
-                    handler = new ConnectionHandler(connectionSocket, router, responseWriter, isCacheEnabled, cacheTimeLimit);
+                    handler = new ConnectionHandler(this,connectionSocket, router, responseWriter, isCacheEnabled, cacheTimeLimit);
                     new Thread(handler).start();
                 } else {
                     connectionSocket.close();
@@ -138,6 +175,10 @@ public class Server {
             ErrorLogger.getInstance().error(e);
         }
 
+    }
+
+    void setupServerSocket() throws IOException {
+        this.serverSocket = new ServerSocket(port);
     }
 
     /**
@@ -186,9 +227,9 @@ public class Server {
      * Stops the server from listening further.
      */
     public synchronized void stop() {
-        if (!welcomeSocket.isClosed())
+        if (!getServerSocket().isClosed())
             try {
-                welcomeSocket.close();
+                getServerSocket().close();
             } catch (IOException e) {
             }
     }
@@ -199,12 +240,20 @@ public class Server {
      * @return
      */
     public boolean isStoped() {
-        if (this.welcomeSocket != null)
-            return this.welcomeSocket.isClosed();
+        if (getServerSocket() != null)
+            return getServerSocket().isClosed();
         return true;
     }
 
     private boolean isHighLoad() {
         return false;
+    }
+
+    private ServerSocket getServerSocket() {
+        return serverSocket;
+    }
+
+    public void setServerSocket(ServerSocket serverSocket) {
+        this.serverSocket = serverSocket;
     }
 }

@@ -34,6 +34,7 @@ public class ConnectionHandler implements Runnable {
 	private final PluginRouter router;
 	private final boolean isCacheEnabled;
 	private Socket socket;
+	private Server server;
 
 	private static Map<String, CachedItem<IHttpResponse>> CachedResponses;
 
@@ -41,8 +42,9 @@ public class ConnectionHandler implements Runnable {
 		CachedResponses = new Hashtable<>();
 	}
 
-	public ConnectionHandler(Socket socket, PluginRouter router, ResponseWriter responseWriter, boolean cacheEnable, long cacheTimeLimit) {
+	public ConnectionHandler(Server server, Socket socket, PluginRouter router, ResponseWriter responseWriter, boolean cacheEnable, long cacheTimeLimit) {
 		this.socket = socket;
+		this.server = server;
 		this.router = router;
 		this.isCacheEnabled = cacheEnable;
 		this.cacheTimeLimit = cacheTimeLimit;
@@ -75,8 +77,11 @@ public class ConnectionHandler implements Runnable {
     private HttpRequest loadRequest(InputStream inStream, OutputStream outStream, ResponseWriter responseWriter) {
         HttpRequest request = null;
         IHttpResponse response = null;
+        long timeSent = 0;
         try {
+            timeSent = System.currentTimeMillis();
             request = HttpRequest.read(inStream);
+            request.addTimestamp(Long.toString(timeSent));
             AccessLogger.getInstance().info(request);
         } catch (ProtocolException pe) {
             int status = pe.getStatus();
@@ -97,6 +102,9 @@ public class ConnectionHandler implements Runnable {
         // Means there was an error, now write the response object to the
         if (response != null) {
             responseWriter.addToQueue(response, socket);
+            long test = Long.parseLong(response.getHeaders().get(Protocol.TIME_RECEIVED));
+            long timediff = test - timeSent;
+            this.server.addLatency(timediff);
             return null;
         }
 

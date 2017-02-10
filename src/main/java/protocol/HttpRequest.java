@@ -74,6 +74,10 @@ public class HttpRequest {
 	public char[] getBody() {
 		return body;
 	}
+	
+	public void addTimestamp(String timestamp) {
+		this.header.put(Protocol.TIME_SENT, timestamp);
+	}
 
 	/**
 	 * The key to value mapping in the request header fields.

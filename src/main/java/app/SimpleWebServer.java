@@ -2,6 +2,8 @@ package app;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import dynamic.DirectoryWatcher;
 import dynamic.PluginRouter;
@@ -18,8 +20,11 @@ public class SimpleWebServer {
 		File properties = new File("./application.properties");
 		ApplicationSettings settings = new ApplicationSettings(properties);
 
+		Thread.currentThread().setName("Server-thread");
+		//
 		PluginRouter router = new PluginRouter();
 		// Create Watch Service
+        new Heartbeat(settings.getPort(), settings.getErrorCount(), settings.getInterval());
         DirectoryWatcher watcher = new DirectoryWatcher(settings.getPluginsDirectory(), router, settings.getRootDirectory());
 
 		// Create a run the server

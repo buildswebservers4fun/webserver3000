@@ -1,15 +1,9 @@
 package app;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Properties;
-
 import com.google.api.client.util.IOUtils;
+
+import java.io.*;
+import java.util.Properties;
 
 public class ApplicationSettings {
 
@@ -18,7 +12,8 @@ public class ApplicationSettings {
 	private String plugins;
 	private boolean cacheEnabled;
 	private long cacheTimeLimit;
-
+	private int heartbeatInteveral;
+	private int heartbeatErrorCount;
 
 	public ApplicationSettings(File properties) throws IOException {
 		Properties prop = new Properties();
@@ -40,6 +35,8 @@ public class ApplicationSettings {
 		plugins = prop.getProperty("plugins", "plugins");
 		cacheEnabled = Boolean.parseBoolean(prop.getProperty("cache-enabled", Boolean.toString(true)));
 		cacheTimeLimit = Long.parseLong(prop.getProperty("cache-time-limit", Long.toString(10000)));
+		heartbeatInteveral = Integer.parseInt(prop.getProperty("heartbeatInterval", "10"));
+		heartbeatErrorCount = Integer.parseInt(prop.getProperty("heartbeatErrorCount", "5"));
 	}
 	
 	public String getRootDirectory() {
@@ -60,5 +57,13 @@ public class ApplicationSettings {
 
 	public long getCacheTimeLimit() {
 		return cacheTimeLimit;
+	}
+
+	public int getErrorCount() {
+		return heartbeatErrorCount;
+	}
+
+	public int getInterval() {
+		return heartbeatInteveral;
 	}
 }

@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 
 import dynamic.DirectoryWatcher;
 import dynamic.PluginRouter;
+import server.SecureServer;
 import server.Server;
 
 /**
@@ -20,8 +21,12 @@ public class SimpleWebServer {
 		File properties = new File("./application.properties");
 		ApplicationSettings settings = new ApplicationSettings(properties);
 
+		System.setProperty("javax.net.ssl.keyStore", "keystore/keystore.jks");
+		System.setProperty("javax.net.ssl.trustStore", "keystore/cacerts.jks");
+		System.setProperty("javax.net.ssl.keyStorePassword", "webserver");
+
 		Thread.currentThread().setName("Server-thread");
-		//
+
 		PluginRouter router = new PluginRouter();
 		// Create Watch Service
         new Heartbeat(settings.getPort(), settings.getErrorCount(), settings.getInterval());
@@ -30,7 +35,15 @@ public class SimpleWebServer {
 		// Create a run the server
 		Server server = new Server(settings, router);
 
-    	watcher.start();
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				SecureServer secure = new SecureServer(settings.getRootDirectory(), 443, router, settings.isCacheEnabled(), settings.getCacheTimeLimit());
+				secure.start();
+			}
+		}).start();
+
+		watcher.start();
 		System.out.println(("Plugin Watcher Started"));
 		server.start();
 	}

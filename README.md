@@ -207,7 +207,6 @@ Response Body:
   "message", "Ok"
 }
 OR
-
 {
   “code”:	404,
   “message”:	“Not	Found”

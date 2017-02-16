@@ -20,7 +20,7 @@ public interface IServlet extends IGetHandler, IHeadHandler, IPostHandler, IPutH
                 return handlePost(request);
             case "DELETE":
                 return handleDelete(request);
-            case "OPTION":
+            case "OPTIONS":
                 return OptionRequest.handle(request);
             default:
                 return null;

@@ -126,3 +126,80 @@ The throughput of the server/how many requests can it process per second?
 * Implement load balancing
 * Buy a server monitoring tool to track statistics such as CPU use, memory, storage, etc to better understand our web server’s traffic and help resolve bottlenecks at peak times
 * Get an actually certified ssl certificate so users trust our webserver
+
+
+API
+
+Feature	1:	Retrieving	a	list	of	users
+Method:	 GET
+URI: /UserID/
+Request	Body:
+<none>
+Response	Body:
+{
+  “code”:	200, [NOTE:	This	could	be	app	specific	also]
+  “message”:	“Ok”,
+  “payload”:	
+  [
+    { “id”:	7,	“name”:	“James	Bond”, "email": "notjamesbond@gmail.com"},
+    {	“id”:	8,	“name”:	“Jason	Bourne”, "email": "jason@bourne.com"}
+  ]
+}
+
+Feature 2: Retrieving	a	user
+Method:	 GET
+URI: /UserID/7
+Request Body:
+<none>
+Response	Body:
+{
+  “code”:	200,
+  “message”:	“Ok”,
+  “payload”:	{	“id”:	7,	“name”:	“James	Bond”, "email":"notjamesbond@gmail.com"}
+}
+OR
+{
+  “code”:	404,
+  “message”:	“Not	Found”
+}
+
+Feature 3: Creating	a	new	user
+Method:	 POST
+URI: /UserId/
+Request Body:
+{	“name”:	“Spongebob Squarepants”, "email", "Ilovegary@gmail.com"}
+Response Body:
+{
+  “code”:	201,
+  “message”:	“Created”,
+  “payload”:	{	“id”:	9,	“name”:	“Spongebob Squarepants”, "Ilovegary@gmail.com"}
+}
+
+Feature 4: Editing a user
+Method: PUT
+URI: /UserID/9
+RequestBody:
+{"name”:	“Spongebob Squarepants”, "email", "patrickstar@gmail.com"}
+Response Body:
+{
+  “code”:	200,
+  “message”:	“Ok",
+  “payload”:	{	“id”:	9,	“name”:	“Spongebob Squarepants”, "patrickstar@gmail.com"}
+}
+
+Feature 5: Deleting a user
+Method: DELETE
+URI: /UserID/9
+RequestBody:
+<none>
+Response Body:
+{
+  "code": 200,
+  "message", "Ok"
+}
+OR
+
+{
+  “code”:	404,
+  “message”:	“Not	Found”
+}

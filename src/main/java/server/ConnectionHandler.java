@@ -72,6 +72,8 @@ public class ConnectionHandler implements Runnable {
 
        if(request != null) {
            IHttpResponse response = processRequestAndGenerateResponse(request);
+           response.getHeaders().put("Access-Control-Allow-Origin", "*");
+           response.getHeaders().put("Access-Control-Allow-Methods", "HEAD, GET, DELETE, POST, PUT");
            responseWriter.addToQueue(response, socket);
        }
     }

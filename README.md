@@ -130,6 +130,7 @@ The throughput of the server/how many requests can it process per second?
 
 API
 
+```
 Feature	1:	Retrieving	a	list	of	users
 Method:	 GET
 URI: /UserID/
@@ -145,7 +146,9 @@ Response	Body:
     {	“id”:	8,	“name”:	“Jason	Bourne”, "email": "jason@bourne.com"}
   ]
 }
+```
 
+```
 Feature 2: Retrieving	a	user
 Method:	 GET
 URI: /UserID/7
@@ -162,7 +165,9 @@ OR
   “code”:	404,
   “message”:	“Not	Found”
 }
+```
 
+```
 Feature 3: Creating	a	new	user
 Method:	 POST
 URI: /UserId/
@@ -174,7 +179,9 @@ Response Body:
   “message”:	“Created”,
   “payload”:	{	“id”:	9,	“name”:	“Spongebob Squarepants”, "Ilovegary@gmail.com"}
 }
+```
 
+```
 Feature 4: Editing a user
 Method: PUT
 URI: /UserID/9
@@ -186,7 +193,9 @@ Response Body:
   “message”:	“Ok",
   “payload”:	{	“id”:	9,	“name”:	“Spongebob Squarepants”, "patrickstar@gmail.com"}
 }
+```
 
+```
 Feature 5: Deleting a user
 Method: DELETE
 URI: /UserID/9
@@ -203,3 +212,4 @@ OR
   “code”:	404,
   “message”:	“Not	Found”
 }
+```

@@ -87,15 +87,15 @@ The throughput of the server/how many requests can it process per second?
 
 | | Server Restart (Seconds) | Correct Responses | Server Crashes   	| Prioritized users | "Latency (Sets of 1000 GET PUT or POST requests)" | "Service rate (1000 users at 200 hatch rate for 10 000 requests)" |
 |----------|--------|---------|---------------|------------|------|-------|
-| Baseline         	| 0.88903708           	| 97.53%        	| Untill Admin Reboots |               	|                               	| 885   |                 	|
-| Auto-Restart     	| 0.88903708           	| 97.53%        	| 30s              	|               	|                               	| 885   |                 	|
-| Cache Layer      	| 0.882026116          	| 98.14%        	| Untill Admin Reboots |               	|                               	| 787.6 |                 	|
-| HeartBeat        	| 0.892043772          	| 99.87%        	| Untill Admin Reboots |               	|                               	| 827.5 |                 	|
-| Https            	| 0.960364606          	| 98.36%        	| Untill Admin Reboots |               	|                               	| 682.4 |                 	|
-| Priority Queue   	| 0.868692338          	| 99.01%        	| Untill Admin Reboots |               	|                               	| 694.8 |                 	|
-| DDOS Defense     	| 0.912117889          	| 99.47%        	| Untill Admin Reboots |               	|                               	| 790.2 |                 	|
-| Rabbit MQ        	|                      	|               	| Untill Admin Reboots |               	|                               	|   	|                 	|
-| Time-Stamping    	| 0.897740023          	| 98.89%        	| Untill Admin Reboots |               	| 1-12ms (based on size of request) | 859.1 |                 	|
+| Baseline         	| 0.88903708           	| 97.53%        	| Untill Admin Reboots |               	|                          25.05805 | 885   |                 	|
+| Auto-Restart     	| 0.88903708           	| 97.53%        	| 30s              	|               	|                           24.9846 | 885   |                 	|
+| Cache Layer      	| 0.882026116          	| 98.14%        	| Untill Admin Reboots |               	|                            14.655 | 787.6 |                 	|
+| HeartBeat        	| 0.892043772          	| 99.87%        	| Untill Admin Reboots |               	|                           20.2194 | 827.5 |                 	|
+| Https            	| 0.960364606          	| 98.36%        	| Untill Admin Reboots |               	|                         19.839839 | 682.4 |                 	|
+| Priority Queue   	| 0.868692338          	| 99.01%        	| Untill Admin Reboots |               	|                            32.542 | 694.8 |                 	|
+| DDOS Defense     	| 0.912117889          	| 99.47%        	| Untill Admin Reboots |               	|                         21.854709 | 790.2 |                 	|
+| Rabbit MQ        	| 0.895069078          	| 98.71%        	| Untill Admin Reboots |               	|                         20.219438 | 801.5 |                 	|
+| Time-Stamping    	| 0.897740023          	| 98.89%        	| Untill Admin Reboots |               	|                          23.84468 | 859.1 |                 	|
 | All Tactics combined |  |  | 30s  |  |  |  |  |
 
 ### Result

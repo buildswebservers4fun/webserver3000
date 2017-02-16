@@ -69,9 +69,11 @@ public class ConnectionHandler implements Runnable {
             return;
         }
         HttpRequest request = loadRequest(inStream, outStream, responseWriter);
-        IHttpResponse response = processRequestAndGenerateResponse(request);
 
-        responseWriter.addToQueue(response, socket);
+       if(request != null) {
+           IHttpResponse response = processRequestAndGenerateResponse(request);
+           responseWriter.addToQueue(response, socket);
+       }
     }
 
     private HttpRequest loadRequest(InputStream inStream, OutputStream outStream, ResponseWriter responseWriter) {
@@ -95,7 +97,7 @@ public class ConnectionHandler implements Runnable {
             response = build400Response();
         }
 
-        if (!request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
+        if (request != null && !request.getVersion().equalsIgnoreCase(Protocol.VERSION)) {
             response = build400Response();
         }
 
